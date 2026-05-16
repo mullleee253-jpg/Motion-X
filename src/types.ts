@@ -2,6 +2,7 @@ export interface User {
   username: string;
   password: string;
   isPremium: boolean;
+  isAdmin?: boolean;
 }
 
 export interface WorkoutStep {

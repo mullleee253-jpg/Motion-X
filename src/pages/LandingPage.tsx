@@ -5,149 +5,121 @@ interface Props {
 
 export default function LandingPage({ onLogin, onRegister }: Props) {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white overflow-hidden relative">
-      {/* Background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-orange-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/3 right-0 w-[300px] h-[300px] bg-orange-600/5 rounded-full blur-[80px] pointer-events-none" />
-
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-5">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center font-black text-sm shadow-lg shadow-orange-500/25 animate-pulse-slow">
-            M
-          </div>
-          <span className="font-black text-xl tracking-tight">MotonX</span>
+    <div className="min-h-screen bg-mesh text-white selection:bg-orange-500/30 overflow-x-hidden">
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 backdrop-blur-md bg-black/20 border-b border-white/5">
+        <div className="flex items-center gap-3 group cursor-pointer">
+          <div className="w-10 h-10 bg-orange-500 rounded-2xl flex items-center justify-center font-black text-lg shadow-[0_0_20px_rgba(249,115,22,0.4)] group-hover:rotate-12 transition-transform">M</div>
+          <span className="text-2xl font-black tracking-tighter">MotonX</span>
         </div>
-        <button
-          onClick={onLogin}
-          className="px-5 py-2 text-sm font-semibold bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all"
-        >
-          Войти
-        </button>
-      </header>
-
-      {/* Hero */}
-      <main className="relative z-10 px-6 pt-12 pb-8 max-w-lg mx-auto">
-        {/* Badge */}
-        <div className="flex justify-center mb-8 animate-fade-up">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full">
-            <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-            <span className="text-orange-400 text-xs font-bold uppercase tracking-widest">Новое в 2026</span>
-          </div>
+        <div className="flex items-center gap-6">
+          <button onClick={onLogin} className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">Войти</button>
+          <button onClick={onRegister} className="px-6 py-2.5 bg-white text-black text-sm font-black rounded-xl hover:bg-zinc-200 transition-all active:scale-95">ПОПРОБОВАТЬ</button>
         </div>
+      </nav>
 
-        {/* Title */}
-        <div className="text-center mb-12 animate-fade-up" style={{ animationDelay: '80ms' }}>
-          <h1 className="text-6xl md:text-7xl font-black tracking-tighter leading-none mb-4">
-            TRAIN<br />
-            <span className="bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500 bg-clip-text text-transparent">
-              LIKE A
+      {/* Hero Section */}
+      <section className="relative pt-44 pb-32 px-6 flex flex-col items-center">
+        {/* Decorative elements */}
+        <div className="absolute top-40 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-500/10 rounded-full blur-[120px] -z-10 animate-pulse" />
+        
+        <div className="max-w-4xl w-full text-center space-y-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full animate-fade-up">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
             </span>
-            <br />
-            <span className="bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500 bg-clip-text text-transparent">
-              MONSTER
-            </span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500">Доступно обновление 2026</span>
+          </div>
+
+          <h1 className="text-7xl md:text-9xl font-black tracking-tighter leading-[0.85] animate-fade-up" style={{ animationDelay: '100ms' }}>
+            ТВОЁ ТЕЛО — <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-orange-400 to-orange-600">ТВОЙ ПРОЕКТ</span>
           </h1>
+
+          <p className="max-w-xl mx-auto text-zinc-400 text-lg md:text-xl font-medium leading-relaxed animate-fade-up" style={{ animationDelay: '200ms' }}>
+            Профессиональные тренировки с адаптивным таймером. <br className="hidden md:block"/>
+            Без лишнего шума. Только результат.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 animate-fade-up" style={{ animationDelay: '300ms' }}>
+            <button 
+              onClick={onRegister}
+              className="px-12 py-5 btn-premium text-white font-black text-lg rounded-2xl shadow-xl shadow-orange-500/20 flex items-center justify-center gap-3 group"
+            >
+              НАЧАТЬ ТРЕНИРОВКУ
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </button>
+          </div>
         </div>
 
-        {/* Subtitle */}
-        <p className="text-zinc-400 text-center text-base leading-relaxed mb-10 animate-fade-up" style={{ animationDelay: '160ms' }}>
-          Простые тренировки с умным таймером.<br />
-          Без инвентаря. Без ерунды.
-        </p>
-
-        {/* CTA */}
-        <div className="space-y-3 animate-fade-up" style={{ animationDelay: '240ms' }}>
-          <button
-            onClick={onRegister}
-            className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-black text-base rounded-2xl transition-all active:scale-[0.97] shadow-xl shadow-orange-500/25 flex items-center justify-center gap-2 group"
-          >
-            Начать бесплатно
-            <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
-          </button>
-          <button
-            onClick={onLogin}
-            className="w-full py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 font-semibold text-sm rounded-2xl transition-all active:scale-[0.97]"
-          >
-            У меня уже есть аккаунт
-          </button>
+        {/* Floating Mockup (Visual decoration) */}
+        <div className="mt-24 w-full max-w-5xl animate-fade-up" style={{ animationDelay: '400ms' }}>
+          <div className="relative aspect-video rounded-[40px] border border-white/10 bg-gradient-to-br from-white/5 to-transparent overflow-hidden shadow-2xl">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-20 h-20 bg-orange-500/20 rounded-full flex items-center justify-center border border-orange-500/40 animate-pulse">
+                <span className="text-4xl">⚡</span>
+              </div>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent" />
+          </div>
         </div>
+      </section>
 
-        {/* Stats */}
-        <div className="flex justify-center gap-12 mt-14 animate-fade-up" style={{ animationDelay: '320ms' }}>
+      {/* Trust Section */}
+      <section className="py-24 px-6 border-t border-white/5">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
           {[
-            { v: '12', l: 'Тренировок' },
-            { v: '6', l: 'PRO эксклюзив' },
-            { v: '∞', l: 'Повторений' },
-          ].map(s => (
-            <div key={s.l} className="text-center">
-              <div className="text-3xl font-black bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">{s.v}</div>
-              <div className="text-zinc-600 text-xs mt-1 font-medium">{s.l}</div>
+            { v: '150K+', l: 'Атлетов' },
+            { v: '12', l: 'Программ' },
+            { v: '4.9', l: 'Рейтинг' },
+            { v: '2026', l: 'Версия' },
+          ].map((s, i) => (
+            <div key={s.l} className="animate-fade-up" style={{ animationDelay: `${500 + i * 100}ms` }}>
+              <div className="text-4xl font-black mb-1">{s.v}</div>
+              <div className="text-zinc-500 text-xs font-bold uppercase tracking-widest">{s.l}</div>
             </div>
           ))}
         </div>
-      </main>
+      </section>
 
-      {/* Features */}
-      <section className="relative z-10 px-6 py-16 max-w-lg mx-auto">
-        <div className="space-y-3">
+      {/* Features Grid */}
+      <section className="py-32 px-6 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8">
           {[
-            {
-              emoji: '⏱',
-              title: 'Умный таймер',
-              desc: 'Автоматически переключает упражнения и передышки. Просто следуй за экраном.',
-              color: 'from-blue-500/10 to-blue-600/5',
-              border: 'border-blue-500/10',
-            },
-            {
-              emoji: '📋',
-              title: 'Чёткий план',
-              desc: 'Каждая тренировка — это последовательность упражнений с таймером и отдыхом.',
-              color: 'from-purple-500/10 to-purple-600/5',
-              border: 'border-purple-500/10',
-            },
-            {
-              emoji: '👑',
-              title: 'PRO режим',
-              desc: 'Хардкорные тренировки для тех, кто хочет выжать максимум. Интенсивность 100%.',
-              color: 'from-orange-500/10 to-amber-500/5',
-              border: 'border-orange-500/10',
-            },
+            { t: 'Умный таймер', d: 'Сам считает время подходов и отдыха.', e: '⏱' },
+            { t: 'PRO Контент', d: 'Эксклюзивные программы от монстров спорта.', e: '👑' },
+            { t: 'Простой старт', d: 'Никаких сложных настроек. Просто нажми Play.', e: '🚀' },
           ].map((f, i) => (
-            <div
-              key={f.title}
-              className={`bg-gradient-to-br ${f.color} border ${f.border} rounded-2xl p-5 animate-fade-up`}
-              style={{ animationDelay: `${400 + i * 80}ms` }}
+            <div 
+              key={f.t} 
+              className="card-premium p-8 rounded-[32px] hover:border-orange-500/30 transition-all group animate-fade-up"
+              style={{ animationDelay: `${700 + i * 100}ms` }}
             >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-zinc-900/80 rounded-2xl flex items-center justify-center text-2xl shrink-0">
-                  {f.emoji}
-                </div>
-                <div>
-                  <div className="font-bold text-base mb-1">{f.title}</div>
-                  <div className="text-zinc-500 text-sm leading-relaxed">{f.desc}</div>
-                </div>
-              </div>
+              <div className="text-4xl mb-6 group-hover:scale-110 transition-transform inline-block">{f.e}</div>
+              <h3 className="text-xl font-black mb-3">{f.t}</h3>
+              <p className="text-zinc-500 text-sm leading-relaxed">{f.d}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="relative z-10 px-6 pb-16 max-w-lg mx-auto animate-fade-up" style={{ animationDelay: '640ms' }}>
-        <button
-          onClick={onRegister}
-          className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-black text-base rounded-2xl transition-all active:scale-[0.97] shadow-xl shadow-orange-500/25 flex items-center justify-center gap-2 group"
-        >
-          Создать аккаунт бесплатно
-          <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
-        </button>
-        <p className="text-center text-zinc-600 text-xs mt-3">Это бесплатно. Всегда.</p>
+      <section className="py-32 px-6">
+        <div className="max-w-4xl mx-auto card-premium p-12 md:p-20 rounded-[48px] text-center space-y-8 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+          <h2 className="text-4xl md:text-6xl font-black tracking-tighter">ГОТОВ ПРИНЯТЬ <br/> ВЫЗОВ?</h2>
+          <button 
+            onClick={onRegister}
+            className="px-12 py-5 bg-white text-black font-black text-lg rounded-2xl hover:bg-zinc-200 transition-all active:scale-95"
+          >
+            ЗАРЕГИСТРИРОВАТЬСЯ БЕСПЛАТНО
+          </button>
+        </div>
       </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 text-center py-8 text-zinc-700 text-xs">
-        © 2026 MotonX · Версия для Vercel
+      <footer className="py-12 text-center text-zinc-600 text-xs border-t border-white/5 uppercase tracking-[0.3em]">
+        © 2026 MotonX Systems · Vercel Engine
       </footer>
     </div>
   );

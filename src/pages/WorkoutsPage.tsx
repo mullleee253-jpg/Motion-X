@@ -1,240 +1,159 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { workouts } from '../data/workouts';
 import { Workout } from '../types';
 import WorkoutTimer from '../components/WorkoutTimer';
 
 const PAYMENT_URL = 'https://dalink.to/mull12312312312';
 
-type Tab = 'free' | 'pro';
-
 export default function WorkoutsPage() {
-  const { user, logout, activatePremium, paymentPending, clearPaymentPending } = useAuth();
-  const [tab, setTab] = useState<Tab>('free');
-  const [showPayment, setShowPayment] = useState(false);
+  const { user, logout, activatePremium, paymentPending, clearPaymentPending, allWorkouts } = useAuth();
+  const [tab, setTab] = useState<'free' | 'pro'>('free');
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
 
-  const freeWorkouts = workouts.filter(w => !w.premium);
-  const proWorkouts = workouts.filter(w => w.premium);
-  const list = tab === 'free' ? freeWorkouts : proWorkouts;
-
-  const handlePayment = () => {
-    window.location.href = PAYMENT_URL;
-  };
-
-  if (paymentPending) {
-    return (
-      <div className="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center px-6">
-        <div className="relative mb-8">
-          <div className="w-24 h-24 rounded-full border-4 border-zinc-800 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-orange-500/20 border-2 border-orange-500 animate-pulse" />
-          </div>
-          <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-lg animate-bounce">
-            ⏳
-          </div>
-        </div>
-        <h1 className="text-3xl font-black mb-2">Ожидание подтверждения</h1>
-        <p className="text-zinc-400 text-center max-w-xs leading-relaxed mb-2">
-          Оплата обрабатывается. Обычно это занимает 1-5 минут.
-        </p>
-        <p className="text-zinc-500 text-sm text-center max-w-xs mb-10">
-          После подтверждения нажми кнопку ниже 👇
-        </p>
-        <button
-          onClick={() => { activatePremium(); clearPaymentPending(); }}
-          className="px-8 py-3.5 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-2xl transition-all active:scale-95 shadow-lg shadow-orange-500/20"
-        >
-          Проверить оплату
-        </button>
-        <button
-          onClick={clearPaymentPending}
-          className="mt-4 text-zinc-500 text-sm hover:text-zinc-300 transition-colors"
-        >
-          Отмена
-        </button>
-      </div>
-    );
-  }
+  const list = allWorkouts.filter(w => tab === 'free' ? !w.premium : w.premium);
 
   if (selectedWorkout) {
     return <WorkoutTimer workout={selectedWorkout} onClose={() => setSelectedWorkout(null)} />;
   }
 
-  if (showPayment) {
-    return (
-      <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-6 py-5">
-          <button onClick={() => setShowPayment(false)} className="text-zinc-400 hover:text-white transition-colors">
-            ← Назад
-          </button>
-          <span className="font-bold text-sm">PRO доступ</span>
-          <div className="w-12" />
-        </header>
-
-        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-amber-500 rounded-3xl flex items-center justify-center text-4xl mb-8 shadow-lg shadow-orange-500/30">
-            👑
-          </div>
-          <h1 className="text-3xl font-black mb-2">Активировать PRO</h1>
-          <p className="text-zinc-400 mb-8 max-w-xs leading-relaxed">
-            Получи доступ ко всем тренировкам и настройкам
-          </p>
-
-          <div className="w-full max-w-xs space-y-3 mb-8">
-            {[
-              '6 эксклюзивных тренировок',
-              'Расширенные настройки',
-              'Приоритетная поддержка',
-              'Без ограничений',
-            ].map(item => (
-              <div key={item} className="flex items-center gap-3 bg-zinc-900/50 border border-zinc-800 rounded-2xl px-4 py-3">
-                <div className="w-5 h-5 bg-orange-500/20 rounded-full flex items-center justify-center text-orange-500 text-xs font-bold">✓</div>
-                <span className="text-sm font-medium">{item}</span>
-              </div>
-            ))}
-          </div>
-
-          <button
-            onClick={handlePayment}
-            className="w-full max-w-xs py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-black text-lg rounded-2xl transition-all active:scale-95 shadow-lg shadow-orange-500/25"
-          >
-            Оплатить 299₽
-          </button>
-
-          <p className="text-zinc-600 text-xs mt-4">
-            Безопасная оплата через dalink
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-5 border-b border-zinc-900/50">
+    <div className="min-h-screen bg-black text-white selection:bg-orange-500/30">
+      {/* Dynamic Header */}
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-black/60 border-b border-white/5 px-6 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center font-black text-xs shadow-lg shadow-orange-500/20">M</div>
-          <span className="font-black text-lg tracking-tight">MotonX</span>
+          <div className="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center font-black text-sm">M</div>
+          <span className="font-black text-xl tracking-tighter">MotonX</span>
         </div>
-        <div className="flex items-center gap-3">
-          {user?.isPremium ? (
-            <span className="text-xs font-black px-2.5 py-1 bg-gradient-to-r from-orange-500 to-amber-500 text-black rounded-lg shadow-lg shadow-orange-500/20">👑 PRO</span>
-          ) : (
-            <button
-              onClick={() => setShowPayment(true)}
-              className="text-xs font-bold px-3 py-1.5 bg-orange-500/10 text-orange-500 border border-orange-500/20 rounded-lg hover:bg-orange-500/20 transition-all"
-            >
-              PRO
-            </button>
-          )}
-          <button onClick={logout} className="text-zinc-500 text-sm hover:text-white transition-colors">Выйти</button>
+        
+        <div className="flex items-center gap-4">
+          <div className="text-right hidden sm:block">
+            <div className="text-xs font-black uppercase text-zinc-500 tracking-widest">{user?.isPremium ? 'PRO Member' : 'Basic Plan'}</div>
+            <div className="text-sm font-bold">{user?.username}</div>
+          </div>
+          <button onClick={logout} className="w-10 h-10 rounded-xl bg-zinc-900 border border-white/5 flex items-center justify-center hover:bg-zinc-800 transition-all text-sm">✕</button>
         </div>
       </header>
 
-      {/* Greeting */}
-      <div className="px-6 pt-6 pb-2">
-        <p className="text-zinc-500 text-sm">
-          Привет, <span className="text-white font-semibold">{user?.username}</span>
-          <span className="ml-2">👋</span>
-        </p>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-2 px-6 pt-4 pb-6">
-        <button
-          onClick={() => setTab('free')}
-          className={`px-5 py-2.5 text-sm font-bold rounded-2xl transition-all ${
-            tab === 'free'
-              ? 'bg-white text-black shadow-lg shadow-white/10'
-              : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700'
-          }`}
-        >
-          Бесплатные
-        </button>
-        <button
-          onClick={() => setTab('pro')}
-          className={`px-5 py-2.5 text-sm font-bold rounded-2xl transition-all flex items-center gap-1.5 ${
-            tab === 'pro'
-              ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20'
-              : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:border-zinc-700'
-          }`}
-        >
-          PRO 👑
-        </button>
-      </div>
-
-      {/* Workout list */}
-      <div className="px-6 pb-32 space-y-3">
-        {list.map((workout, i) => {
-          const isLocked = workout.premium && !user?.isPremium;
-          return (
-            <button
-              key={workout.id}
-              onClick={() => !isLocked && setSelectedWorkout(workout)}
-              disabled={isLocked}
-              className={`w-full text-left rounded-2xl p-5 border transition-all active:scale-[0.98] group ${
-                isLocked
-                  ? 'bg-zinc-900/50 border-zinc-800/50 opacity-60 cursor-not-allowed'
-                  : 'bg-zinc-900 border-zinc-800/80 hover:border-orange-500/40 hover:bg-zinc-900/80'
-              }`}
-              style={{ animationDelay: `${i * 60}ms` }}
+      <main className="max-w-5xl mx-auto px-6 py-12">
+        {/* Payment Pending Banner */}
+        {paymentPending && (
+          <div className="mb-12 card-premium p-8 rounded-[32px] border-orange-500/30 flex flex-col md:flex-row items-center gap-8 animate-fade-up">
+            <div className="w-16 h-16 bg-orange-500/20 rounded-2xl flex items-center justify-center text-3xl animate-bounce">⏳</div>
+            <div className="flex-1 text-center md:text-left">
+              <h3 className="text-xl font-black mb-1 italic uppercase">Ожидайте! Скоро всё будет...</h3>
+              <p className="text-zinc-500 text-sm">Мы проверяем вашу оплату. Это займет пару минут. Приготовься к хардкору!</p>
+            </div>
+            <button 
+              onClick={() => { activatePremium(); clearPaymentPending(); }}
+              className="px-8 py-3 bg-white text-black font-black rounded-xl hover:bg-zinc-200 transition-all"
             >
-              <div className="flex items-center gap-4">
-                {/* Emoji box */}
-                <div className={`w-13 h-13 rounded-2xl flex items-center justify-center text-2xl shrink-0 transition-transform ${isLocked ? '' : 'group-hover:scale-110'}`}
-                  style={{ background: workout.premium ? 'linear-gradient(135deg, rgba(249,115,22,0.15), rgba(245,158,11,0.05))' : '#27272a' }}
-                >
-                  {workout.emoji}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-base">{workout.title}</span>
-                    {workout.premium && (
-                      <span className="text-xs font-bold px-2 py-0.5 bg-gradient-to-r from-orange-500/20 to-amber-500/10 text-orange-400 border border-orange-500/20 rounded-lg">PRO</span>
-                    )}
-                  </div>
-                  <div className="text-zinc-500 text-xs flex items-center gap-3">
-                    <span className="flex items-center gap-1">⏱ {workout.duration}</span>
-                    <span className="flex items-center gap-1">{workout.level === 'Легкий' ? '🟢' : workout.level === 'Средний' ? '🟡' : '🔴'} {workout.level}</span>
-                    <span>{workout.category}</span>
-                  </div>
-                </div>
-
-                {isLocked ? (
-                  <div className="w-10 h-10 rounded-full bg-zinc-800/50 flex items-center justify-center text-lg shrink-0">
-                    🔒
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 font-bold shrink-0 group-hover:bg-orange-500 group-hover:text-white transition-all">
-                    →
-                  </div>
-                )}
-              </div>
-
-              {isLocked && (
-                <div className="mt-3 pt-3 border-t border-zinc-800/50 flex items-center gap-2 text-orange-400/70 text-xs font-medium">
-                  <span>🔒</span> Открой с PRO доступом
-                </div>
-              )}
+              ПРОВЕРИТЬ СЕЙЧАС
             </button>
-          );
-        })}
-      </div>
+          </div>
+        )}
 
-      {/* PRO CTA (free tab) */}
-      {!user?.isPremium && tab === 'free' && (
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-zinc-950 via-zinc-950 to-transparent">
-          <button
-            onClick={() => setShowPayment(true)}
-            className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-black text-base rounded-2xl transition-all active:scale-95 shadow-xl shadow-orange-500/20 flex items-center justify-center gap-3"
-          >
-            <span>👑</span> Открыть PRO — 299₽
-          </button>
+        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <h1 className="text-5xl font-black tracking-tighter mb-2">ТРЕНИРОВКИ</h1>
+            <p className="text-zinc-500 font-medium">Выбери свою программу на сегодня</p>
+          </div>
+          
+          <div className="flex p-1.5 bg-zinc-900/50 rounded-2xl border border-white/5">
+            <button 
+              onClick={() => setTab('free')}
+              className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${tab === 'free' ? 'bg-white text-black shadow-lg shadow-white/5' : 'text-zinc-500 hover:text-white'}`}
+            >
+              БЕСПЛАТНЫЕ
+            </button>
+            <button 
+              onClick={() => setTab('pro')}
+              className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${tab === 'pro' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-zinc-500 hover:text-white'}`}
+            >
+              PRO 👑
+            </button>
+          </div>
         </div>
-      )}
+
+        {/* Workout Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {list.map((w, i) => {
+            const locked = w.premium && !user?.isPremium;
+            return (
+              <div 
+                key={w.id}
+                className="group relative"
+                style={{ animationDelay: `${i * 100}ms` }}
+              >
+                <div className={`card-premium p-6 rounded-[32px] h-full transition-all flex flex-col ${locked ? 'opacity-40 grayscale pointer-events-none' : 'hover:border-orange-500/40 hover:-translate-y-1'}`}>
+                  <div className="flex items-start justify-between mb-8">
+                    <div className="w-16 h-16 bg-zinc-950 rounded-[24px] border border-white/10 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform">
+                      {w.emoji}
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="text-[10px] font-black bg-white/5 border border-white/10 px-3 py-1 rounded-full uppercase tracking-widest text-zinc-400">
+                        {w.level}
+                      </span>
+                      {w.premium && <span className="text-[10px] font-black bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full uppercase tracking-widest text-orange-500">Premium</span>}
+                    </div>
+                  </div>
+
+                  <h3 className="text-2xl font-black mb-2 tracking-tight">{w.title}</h3>
+                  <p className="text-zinc-500 text-sm leading-relaxed mb-8 flex-1">{w.description}</p>
+
+                  <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                    <div className="flex gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-zinc-600 uppercase">Время</span>
+                        <span className="text-xs font-bold text-zinc-300">{w.duration}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-zinc-600 uppercase">Шагов</span>
+                        <span className="text-xs font-bold text-zinc-300">{w.steps.length}</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setSelectedWorkout(w)}
+                      className="px-6 py-2.5 bg-white text-black text-xs font-black rounded-xl hover:bg-zinc-200 transition-all active:scale-95"
+                    >
+                      START
+                    </button>
+                  </div>
+
+                  {locked && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-[32px]">
+                      <div className="text-4xl mb-4">🔒</div>
+                      <span className="text-xs font-black uppercase tracking-widest bg-orange-500 text-white px-4 py-2 rounded-xl">Unlock with PRO</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* PRO Upsell */}
+        {!user?.isPremium && (
+          <div className="mt-20 card-premium p-12 rounded-[48px] bg-gradient-to-br from-orange-500/20 to-transparent border-orange-500/20 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] translate-x-1/2 -translate-y-1/2" />
+            <div className="max-w-md">
+              <h2 className="text-4xl font-black tracking-tighter mb-4 italic uppercase">MotonX PRO 👑</h2>
+              <p className="text-zinc-400 text-lg leading-relaxed mb-6">Открой все секретные программы, хардкорные уровни и расширенную аналитику тренировок.</p>
+              <ul className="grid grid-cols-2 gap-3 text-xs font-bold text-zinc-500 uppercase tracking-widest mb-8">
+                <li>✓ 12+ Тренировок</li>
+                <li>✓ Без рекламы</li>
+                <li>✓ Кастомные таймеры</li>
+                <li>✓ 24/7 Поддержка</li>
+              </ul>
+            </div>
+            <button 
+              onClick={() => window.location.href = PAYMENT_URL + '?payment=pending'}
+              className="px-12 py-5 btn-premium text-white font-black text-xl rounded-2xl shadow-2xl shadow-orange-500/30 whitespace-nowrap active:scale-95 transition-all"
+            >
+              UPGRADE — 299₽
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
