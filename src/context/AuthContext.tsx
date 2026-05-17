@@ -78,7 +78,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const resWorkouts = await fetch('/api/workouts');
         if (resWorkouts.ok) {
           const cloudWorkouts = await resWorkouts.json();
-          if (cloudWorkouts.length > 0) setAllWorkouts(cloudWorkouts);
+          // Обновляем только если в базе есть данные
+          if (cloudWorkouts && cloudWorkouts.length > 0) {
+            setAllWorkouts(cloudWorkouts);
+          }
         }
       } catch (e) {
         console.log("Cloud sync error (check Mongo URI on Vercel)");

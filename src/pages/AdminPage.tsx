@@ -188,12 +188,26 @@ export default function AdminPage() {
           </div>
           
           {activeTab === 'workouts' && (
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-8 py-4 bg-orange-500 text-black font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-orange-500/20"
-            >
-              + NEW_PROGRAM
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={async () => {
+                  const { workouts } = await import('../data/workouts');
+                  for (const w of workouts) {
+                    await addWorkout(w);
+                  }
+                  alert('Тренировки загружены в MongoDB!');
+                }}
+                className="px-6 py-4 bg-green-500 text-black font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-green-500/20"
+              >
+                🔄 SEED_DB
+              </button>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="px-8 py-4 bg-orange-500 text-black font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-orange-500/20"
+              >
+                + NEW_PROGRAM
+              </button>
+            </div>
           )}
         </header>
 
