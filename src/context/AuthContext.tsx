@@ -12,7 +12,7 @@ interface Message {
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   register: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   activatePremium: (username?: string) => void;
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [user?.isAdmin]);
 
-  const login = (username: string, password: string): boolean => {
+  const login = async (username: string, password: string): Promise<boolean> => {
     const cleanUser = username.trim().toLowerCase();
     
     // Admin Hardcoded
@@ -102,16 +102,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     }
 
-    // Обычный логин (пока ищем в загруженных юзерах)
-    const found = allUsers.find(u => u.username.toLowerCase() === cleanUser);
-    // В реальной жизни тут должен быть fetch('/api/login')
-    // Но для упрощения используем кешированных юзеров
-    if (found) {
-      const sessionData = { ...found, expiresAt: Date.now() + 86400000 };
-      setUser(found);
-      localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-      return true;
+    // Проверяем в базе через API
+    try {
+      const res = await fetch('/api/users');
+      if (res.ok) {
+        const users = await res.json();
+        const found = users.find((u: User) => u.username.toLowerCase() === cleanUser && u.password === password);
+        if (found) {
+          const sessionData = { ...found, expiresAt: Date.now() + 86400000 };
+          setUser(found);
+          localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error('Login error:', e);
     }
+    
     return false;
   };
 
@@ -124,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ username: cleanUser, password, isPremium: false })
       });
       if (res.ok) {
-        return login(username, password);
+        return await login(username, password);
       }
     } catch (e) {
       console.error('Registration error:', e);

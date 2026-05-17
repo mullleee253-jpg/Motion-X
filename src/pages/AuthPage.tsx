@@ -26,7 +26,8 @@ export default function AuthPage({ mode, onSuccess, onBack, onSwitch }: Props) {
     
     try {
       if (mode === 'login') {
-        if (!login(username.trim(), password)) { 
+        const success = await login(username.trim(), password);
+        if (!success) { 
           setError('Неверный логин или пароль'); 
           setLoading(false); 
           return; 
