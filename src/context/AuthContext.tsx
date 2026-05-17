@@ -23,8 +23,8 @@ const SESSION_KEY = 'motonx_session_v2';
 const PAYMENT_KEY = 'motonx_payment_pending_v2';
 const WORKOUTS_KEY = 'motonx_workouts_v2';
 
-// В будущем здесь будут вызовы fetch('/api/...')
-const IS_SERVER_MODE = false; // Переключится автоматически при деплое
+// Future database integration
+export const IS_SERVER_MODE = false;
 
 // ADMIN SECURITY HASH (admin / master2026)
 const ADMIN_LOGIN = 'admin';

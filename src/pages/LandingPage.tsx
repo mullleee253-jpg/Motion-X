@@ -4,8 +4,16 @@ interface Props {
 }
 
 export default function LandingPage({ onLogin, onRegister }: Props) {
+  const handleAdminSecret = () => {
+    window.location.href = '/admin';
+  };
+
   return (
     <div className="min-h-screen bg-mesh text-white selection:bg-orange-500/30 overflow-x-hidden">
+      <div 
+        onClick={handleAdminSecret}
+        className="fixed bottom-4 right-4 w-4 h-4 bg-transparent cursor-default z-[999]"
+      />
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 backdrop-blur-md bg-black/20 border-b border-white/5">
         <div className="flex items-center gap-3 group cursor-pointer">

@@ -9,16 +9,23 @@ type Screen = 'landing' | 'login' | 'register' | 'admin';
 
 function AppInner() {
   const { user } = useAuth();
-  const [screen, setScreen] = useState<Screen>('landing');
+  const [screen, setScreen] = useState<Screen>(() => {
+    if (typeof window !== 'undefined' && window.location.pathname === '/admin') return 'admin';
+    return 'landing';
+  });
 
   // URL-based routing for /admin
   useEffect(() => {
-    if (window.location.pathname === '/admin') {
-      setScreen('admin');
-    }
+    const handleLocationChange = () => {
+      if (window.location.pathname === '/admin') {
+        setScreen('admin');
+      }
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
 
-  if (user?.isAdmin || screen === 'admin') {
+  if (screen === 'admin') {
     return <AdminPage />;
   }
 

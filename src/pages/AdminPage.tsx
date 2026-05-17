@@ -3,8 +3,10 @@ import { useAuth, ADMIN_KEY } from '../context/AuthContext';
 import { Workout, WorkoutStep } from '../types';
 
 export default function AdminPage() {
-  const { user, allUsers, allWorkouts, activatePremium, removePremium, addWorkout, deleteWorkout, logout } = useAuth();
+  const { user, login, allUsers, allWorkouts, activatePremium, removePremium, addWorkout, deleteWorkout, logout } = useAuth();
   
+  const [adminLogin, setAdminLogin] = useState('');
+  const [adminPass, setAdminPass] = useState('');
   const [keyInput, setKeyInput] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [activeTab, setActiveTab] = useState<'users' | 'workouts'>('users');
@@ -15,16 +17,36 @@ export default function AdminPage() {
   });
   const [newStep, setNewStep] = useState<WorkoutStep>({ name: '', duration: 60, type: 'exercise' });
 
-  if (!isAuthorized) {
+  // Security Gate
+  if (!user?.isAdmin || !isAuthorized) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 font-mono">
         <div className="w-full max-w-md bg-zinc-950 border border-white/5 p-10 rounded-[40px] shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-orange-500" />
           <div className="text-5xl mb-8 text-center grayscale opacity-40">🔐</div>
-          <h1 className="text-2xl font-black text-center mb-1 uppercase tracking-tighter">SECURE LOGIN</h1>
+          <h1 className="text-2xl font-black text-center mb-1 uppercase tracking-tighter">SECURE ACCESS</h1>
           <p className="text-zinc-600 text-[10px] text-center mb-10 uppercase tracking-[0.4em]">Auth required // Core v2.6</p>
           
           <div className="space-y-4">
+            {!user?.isAdmin ? (
+              <>
+                <input
+                  type="text"
+                  value={adminLogin}
+                  onChange={(e) => setAdminLogin(e.target.value)}
+                  placeholder="ADMIN_ID"
+                  className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-white font-mono text-sm outline-none focus:border-orange-500/50 transition-all"
+                />
+                <input
+                  type="password"
+                  value={adminPass}
+                  onChange={(e) => setAdminPass(e.target.value)}
+                  placeholder="ADMIN_PASSWORD"
+                  className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-white font-mono text-sm outline-none focus:border-orange-500/50 transition-all"
+                />
+              </>
+            ) : null}
+            
             <input
               type="password"
               value={keyInput}
@@ -32,16 +54,24 @@ export default function AdminPage() {
               placeholder="SYSTEM_SECRET_KEY"
               className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-center text-orange-500 font-mono text-sm tracking-widest outline-none focus:border-orange-500/50 transition-all"
             />
+            
             <button
               onClick={() => {
-                if (keyInput === ADMIN_KEY && user?.isAdmin) setIsAuthorized(true);
-                else alert('AUTH_FAILURE: ACCESS DENIED');
+                let ok = true;
+                if (!user?.isAdmin) {
+                  ok = login(adminLogin, adminPass);
+                }
+                if (ok && keyInput === ADMIN_KEY) {
+                  setIsAuthorized(true);
+                } else {
+                  alert('AUTH_FAILURE: ACCESS DENIED');
+                }
               }}
               className="w-full py-4 bg-white text-black font-black rounded-2xl hover:bg-zinc-200 transition-all active:scale-[0.98]"
             >
               INITIALIZE_SYSTEM
             </button>
-            <button onClick={logout} className="w-full text-zinc-700 text-[10px] font-bold uppercase tracking-widest hover:text-zinc-500 transition-colors">Abort Mission</button>
+            <button onClick={() => window.location.href = '/'} className="w-full text-zinc-700 text-[10px] font-bold uppercase tracking-widest hover:text-zinc-500 transition-colors">Abort Mission</button>
           </div>
         </div>
       </div>
@@ -94,9 +124,14 @@ export default function AdminPage() {
           ))}
         </nav>
 
-        <button onClick={logout} className="px-5 py-4 border border-red-500/20 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
-          Logout System
-        </button>
+        <div className="pt-6 border-t border-white/5">
+            <button onClick={() => window.location.href = '/'} className="w-full mb-3 px-5 py-3 bg-zinc-900/50 text-zinc-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-white transition-all">
+              Go to Site
+            </button>
+            <button onClick={logout} className="w-full px-5 py-4 border border-red-500/20 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
+              Logout System
+            </button>
+        </div>
       </div>
 
       {/* Main Admin Content */}
@@ -134,7 +169,7 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <div className="text-white font-bold">{u.username}</div>
-                    <div className="text-[9px] text-zinc-600 uppercase tracking-widest">User_ID: {Math.random().toString(16).slice(2, 8)}</div>
+                    <div className="text-[9px] text-zinc-600 uppercase tracking-widest">User_ID: {u.username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0).toString(16)}</div>
                   </div>
                 </div>
                 
