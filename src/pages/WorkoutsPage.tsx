@@ -36,13 +36,18 @@ export default function WorkoutsPage() {
   });
 
   // Debug
-  console.log('Total workouts:', allWorkouts.length);
-  console.log('Workouts by tier:', {
-    free: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'free').length,
-    standard: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'standard').length,
-    pro: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'pro').length,
-  });
-  console.log('Current tab:', tab, 'Showing:', list.length);
+  useEffect(() => {
+    console.log('=== WORKOUT DEBUG ===');
+    console.log('Total workouts:', allWorkouts.length);
+    console.log('First 5 workouts:', allWorkouts.slice(0, 5).map(w => ({ id: w.id, title: w.title, tier: w.tier, premium: w.premium })));
+    console.log('Workouts by tier:', {
+      free: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'free').length,
+      standard: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'standard').length,
+      pro: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'pro').length,
+    });
+    console.log('Current tab:', tab, 'Showing:', list.length);
+    console.log('User tier:', userTier);
+  }, [allWorkouts, tab, list.length, userTier]);
 
   if (selectedWorkout) {
     return <WorkoutTimer workout={selectedWorkout} onClose={() => setSelectedWorkout(null)} />;
