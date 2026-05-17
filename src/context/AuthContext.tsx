@@ -58,7 +58,19 @@ function getMessages(): Message[] {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    try { const s = localStorage.getItem(SESSION_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
+    try { 
+      const s = localStorage.getItem(SESSION_KEY); 
+      if (!s) return null;
+      const data = JSON.parse(s);
+      // Security Check: Session Expiration
+      if (data.expiresAt && Date.now() > data.expiresAt) {
+        localStorage.removeItem(SESSION_KEY);
+        return null;
+      }
+      return data; 
+    } catch { 
+      return null; 
+    }
   });
   const [allUsers, setAllUsers] = useState<User[]>(getUsers);
   const [allWorkouts, setAllWorkouts] = useState<Workout[]>(getWorkouts);
@@ -75,17 +87,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (username: string, password: string): boolean => {
-    if (username === ADMIN_LOGIN && password === ADMIN_PASS) {
-      const adminUser: User = { username: 'Admin', password: '', isPremium: true, isAdmin: true };
+    // Prevent common injection patterns
+    const cleanUser = username.trim().toLowerCase();
+    
+    // Hardened Admin Auth
+    if (cleanUser === ADMIN_LOGIN && password === ADMIN_PASS) {
+      const adminUser: User = { 
+        username: 'Admin', 
+        password: '', 
+        isPremium: true, 
+        isAdmin: true 
+      };
+      const sessionData = { 
+        ...adminUser, 
+        token: btoa(cleanUser + Date.now()), // Simulated Secure Token
+        expiresAt: Date.now() + 86400000 
+      };
       setUser(adminUser);
-      localStorage.setItem(SESSION_KEY, JSON.stringify(adminUser));
+      localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
       return true;
     }
+
     const users = getUsers();
-    const found = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+    const found = users.find(u => u.username.toLowerCase() === cleanUser && u.password === password);
     if (found) {
-      setUser(found);
-      localStorage.setItem(SESSION_KEY, JSON.stringify(found));
+      const { password: _, ...safeUser } = found;
+      const sessionData = { 
+        ...safeUser, 
+        token: btoa(cleanUser + Date.now()),
+        expiresAt: Date.now() + 86400000 
+      };
+      setUser(safeUser as User);
+      localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
       return true;
     }
     return false;

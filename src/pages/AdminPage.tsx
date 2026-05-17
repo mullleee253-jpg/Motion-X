@@ -102,12 +102,15 @@ export default function AdminPage() {
     
     addWorkout(workout);
     
-    // Attempt to sync with MongoDB via API
+    // Attempt to sync with MongoDB via API with Authorization
     fetch('/api/workouts', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${ADMIN_KEY}`
+      },
       body: JSON.stringify(workout)
-    }).catch(() => console.log('Offline mode: Saved only locally'));
+    }).catch(() => console.log('Sync failed: Saved locally only'));
 
     setShowAddModal(false);
     setNw({ title: '', description: '', level: 'Средний', category: 'Сила', premium: false, emoji: '⚡', steps: [] });

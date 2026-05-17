@@ -4,8 +4,9 @@ import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import WorkoutsPage from './pages/WorkoutsPage';
 import AdminPage from './pages/AdminPage';
+import NotFoundPage from './pages/NotFoundPage';
 
-type Screen = 'landing' | 'login' | 'register' | 'admin';
+type Screen = 'landing' | 'login' | 'register' | 'admin' | '404';
 
 import SupportChat from './components/SupportChat';
 
@@ -16,16 +17,24 @@ function AppInner() {
     return 'landing';
   });
 
-  // URL-based routing for /admin
+  // URL-based routing for /admin and 404
   useEffect(() => {
     const handleLocationChange = () => {
-      if (window.location.pathname === '/admin') {
+      const path = window.location.pathname;
+      if (path === '/admin') {
         setScreen('admin');
+      } else if (path !== '/' && path !== '/login' && path !== '/register') {
+        setScreen('404');
       }
     };
+    handleLocationChange();
     window.addEventListener('popstate', handleLocationChange);
     return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
+
+  if (screen === '404') {
+    return <NotFoundPage />;
+  }
 
   if (screen === 'admin') {
     return <AdminPage />;
