@@ -191,11 +191,53 @@ export default function AdminPage() {
             <div className="flex gap-4">
               <button
                 onClick={async () => {
-                  const { workouts } = await import('../data/workouts');
-                  for (const w of workouts) {
-                    await addWorkout(w);
+                  if (!confirm('Удалить ВСЕ тренировки из базы?')) return;
+                  try {
+                    // Удаляем все тренировки
+                    for (const w of allWorkouts) {
+                      await fetch(`/api/workouts?id=${w.id}`, { 
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
+                      });
+                    }
+                    alert('Все тренировки удалены!');
+                    window.location.reload();
+                  } catch (e) {
+                    alert('Ошибка при удалении');
                   }
-                  alert('Тренировки загружены в MongoDB!');
+                }}
+                className="px-6 py-4 bg-red-500 text-white font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-red-500/20"
+              >
+                🗑️ CLEAR_ALL
+              </button>
+              <button
+                onClick={async () => {
+                  if (!confirm('Загрузить начальные тренировки? Существующие с такими же ID будут заменены.')) return;
+                  try {
+                    const { workouts } = await import('../data/workouts');
+                    
+                    // Сначала удаляем все существующие
+                    const res = await fetch('/api/workouts');
+                    if (res.ok) {
+                      const existing = await res.json();
+                      for (const w of existing) {
+                        await fetch(`/api/workouts?id=${w.id}`, { 
+                          method: 'DELETE',
+                          headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
+                        });
+                      }
+                    }
+                    
+                    // Потом добавляем новые
+                    for (const w of workouts) {
+                      await addWorkout(w);
+                    }
+                    
+                    alert(`${workouts.length} тренировок загружено в MongoDB!`);
+                    window.location.reload();
+                  } catch (e) {
+                    alert('Ошибка при загрузке');
+                  }
                 }}
                 className="px-6 py-4 bg-green-500 text-black font-black rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-green-500/20"
               >

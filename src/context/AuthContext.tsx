@@ -74,14 +74,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
         
-        // Sync Workouts
+        // Sync Workouts - ТОЛЬКО если в базе есть данные, иначе используем локальные
         const resWorkouts = await fetch('/api/workouts');
         if (resWorkouts.ok) {
           const cloudWorkouts = await resWorkouts.json();
-          // Обновляем только если в базе есть данные
-          if (cloudWorkouts && cloudWorkouts.length > 0) {
+          // Обновляем только если в базе реально есть тренировки
+          if (Array.isArray(cloudWorkouts) && cloudWorkouts.length > 0) {
             setAllWorkouts(cloudWorkouts);
           }
+          // Если база пустая - оставляем initialWorkouts
         }
       } catch (e) {
         console.log("Cloud sync error (check Mongo URI on Vercel)");
@@ -150,23 +151,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const targetName = username || user?.username;
     if (!targetName) return;
     try {
-      await fetch('/api/users', {
+      const res = await fetch('/api/users', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: targetName, isPremium: true })
       });
-      if (user?.username === targetName) setUser({ ...user, isPremium: true });
-    } catch (e) {}
+      
+      if (res.ok) {
+        // Обновляем локальный список юзеров
+        setAllUsers(prev => prev.map(u => 
+          u.username.toLowerCase() === targetName.toLowerCase() 
+            ? { ...u, isPremium: true } 
+            : u
+        ));
+        
+        // Если это текущий юзер - обновляем его сессию
+        if (user?.username === targetName) {
+          const updatedUser = { ...user, isPremium: true };
+          setUser(updatedUser);
+          localStorage.setItem(SESSION_KEY, JSON.stringify({ ...updatedUser, expiresAt: Date.now() + 86400000 }));
+        }
+      }
+    } catch (e) {
+      console.error('Premium activation error:', e);
+    }
   };
 
   const removePremium = async (username: string) => {
     try {
-      await fetch('/api/users', {
+      const res = await fetch('/api/users', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, isPremium: false })
       });
-    } catch (e) {}
+      
+      if (res.ok) {
+        // Обновляем локальный список юзеров
+        setAllUsers(prev => prev.map(u => 
+          u.username.toLowerCase() === username.toLowerCase() 
+            ? { ...u, isPremium: false } 
+            : u
+        ));
+      }
+    } catch (e) {
+      console.error('Premium removal error:', e);
+    }
   };
 
   const sendMessage = async (text: string, to?: string) => {
