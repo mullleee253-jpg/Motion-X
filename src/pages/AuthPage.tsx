@@ -23,12 +23,27 @@ export default function AuthPage({ mode, onSuccess, onBack, onSwitch }: Props) {
     if (password.length < 4) { setError('Минимум 4 символа'); return; }
     setLoading(true);
     await new Promise(r => setTimeout(r, 400));
-    if (mode === 'login') {
-      if (!login(username.trim(), password)) { setError('Неверный логин или пароль'); setLoading(false); return; }
-    } else {
-      if (!register(username.trim(), password)) { setError('Логин занят'); setLoading(false); return; }
+    
+    try {
+      if (mode === 'login') {
+        if (!login(username.trim(), password)) { 
+          setError('Неверный логин или пароль'); 
+          setLoading(false); 
+          return; 
+        }
+      } else {
+        const success = await register(username.trim(), password);
+        if (!success) { 
+          setError('Логин занят или ошибка сервера'); 
+          setLoading(false); 
+          return; 
+        }
+      }
+      onSuccess();
+    } catch (err) {
+      setError('Ошибка соединения');
+      setLoading(false);
     }
-    onSuccess();
   };
 
   return (

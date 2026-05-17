@@ -13,7 +13,7 @@ interface Message {
 interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => boolean;
-  register: (username: string, password: string) => boolean;
+  register: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   activatePremium: (username?: string) => void;
   removePremium: (username: string) => void;
@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  const register = async (username: string, password: string) => {
+  const register = async (username: string, password: string): Promise<boolean> => {
     const cleanUser = username.trim().toLowerCase();
     try {
       const res = await fetch('/api/users', {
@@ -124,10 +124,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ username: cleanUser, password, isPremium: false })
       });
       if (res.ok) {
-        login(username, password);
-        return true;
+        return login(username, password);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Registration error:', e);
+    }
     return false;
   };
 
@@ -202,7 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ 
-      user, login, register: (u, p) => { register(u, p); return true; }, logout, activatePremium, removePremium,
+      user, login, register, logout, activatePremium, removePremium,
       paymentPending, clearPaymentPending, allUsers, allWorkouts,
       addWorkout, deleteWorkout, messages, sendMessage
     }}>
