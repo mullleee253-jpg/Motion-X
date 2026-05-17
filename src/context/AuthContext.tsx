@@ -77,6 +77,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>(getMessages);
   const [paymentPending, setPaymentPending] = useState(() => localStorage.getItem(PAYMENT_KEY) === 'true');
 
+  // Real-time Message Polling (simulated)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const latest = getMessages();
+      if (latest.length !== messages.length) {
+        setMessages(latest);
+      }
+    }, 2000); // Проверка каждые 2 секунды
+    return () => clearInterval(interval);
+  }, [messages.length]);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('payment') === 'pending') {

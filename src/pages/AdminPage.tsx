@@ -29,43 +29,54 @@ export default function AdminPage() {
   });
   const [newStep, setNewStep] = useState<WorkoutStep>({ name: '', duration: 60, type: 'exercise' });
 
-  // Security Gate
+  // Security Gate UI
   if (!user?.isAdmin || !isAuthorized) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 font-mono">
-        <div className="w-full max-w-md bg-zinc-950 border border-white/5 p-10 rounded-[40px] shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-orange-500" />
-          <div className="text-5xl mb-8 text-center grayscale opacity-40">🔐</div>
-          <h1 className="text-2xl font-black text-center mb-1 uppercase tracking-tighter">SECURE ACCESS</h1>
-          <p className="text-zinc-600 text-[10px] text-center mb-10 uppercase tracking-[0.4em]">Auth required // Core v2.6</p>
+        {/* Glow Effects */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="w-full max-w-md bg-[#0a0a0a] border border-white/10 p-10 rounded-[40px] shadow-[0_30px_100px_rgba(0,0,0,1)] relative overflow-hidden animate-scale-in">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-red-600 via-orange-500 to-red-600" />
+          
+          <div className="text-center mb-10">
+            <div className="inline-block p-4 bg-zinc-900 rounded-[20px] mb-6 border border-white/5 shadow-inner">
+              <span className="text-4xl">🔐</span>
+            </div>
+            <h1 className="text-2xl font-black text-white uppercase tracking-tighter italic">Terminal Access</h1>
+            <p className="text-zinc-600 text-[9px] uppercase tracking-[0.5em] mt-2">Authorization Protocol 2.6.0</p>
+          </div>
           
           <div className="space-y-4">
-            {!user?.isAdmin ? (
-              <>
+            {!user?.isAdmin && (
+              <div className="space-y-3">
                 <input
                   type="text"
                   value={adminLogin}
                   onChange={(e) => setAdminLogin(e.target.value)}
-                  placeholder="ADMIN_ID"
-                  className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-white font-mono text-sm outline-none focus:border-orange-500/50 transition-all"
+                  placeholder="ADMIN_IDENTIFIER"
+                  className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-white font-mono text-xs tracking-wider outline-none focus:border-red-500/50 transition-all placeholder:text-zinc-800"
                 />
                 <input
                   type="password"
                   value={adminPass}
                   onChange={(e) => setAdminPass(e.target.value)}
-                  placeholder="ADMIN_PASSWORD"
-                  className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-white font-mono text-sm outline-none focus:border-orange-500/50 transition-all"
+                  placeholder="ENCRYPTION_PASS"
+                  className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-white font-mono text-xs tracking-wider outline-none focus:border-red-500/50 transition-all placeholder:text-zinc-800"
                 />
-              </>
-            ) : null}
+              </div>
+            )}
             
-            <input
-              type="password"
-              value={keyInput}
-              onChange={(e) => setKeyInput(e.target.value)}
-              placeholder="SYSTEM_SECRET_KEY"
-              className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-center text-orange-500 font-mono text-sm tracking-widest outline-none focus:border-orange-500/50 transition-all"
-            />
+            <div className="relative">
+              <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-orange-500 rounded-full" />
+              <input
+                type="password"
+                value={keyInput}
+                onChange={(e) => setKeyInput(e.target.value)}
+                placeholder="SYSTEM_MASTER_KEY"
+                className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-center text-orange-500 font-mono text-sm tracking-[0.3em] outline-none focus:border-orange-500/50 transition-all placeholder:text-zinc-800"
+              />
+            </div>
             
             <button
               onClick={() => {
@@ -79,11 +90,19 @@ export default function AdminPage() {
                   alert('AUTH_FAILURE: ACCESS DENIED');
                 }
               }}
-              className="w-full py-4 bg-white text-black font-black rounded-2xl hover:bg-zinc-200 transition-all active:scale-[0.98]"
+              className="w-full py-5 bg-white text-black font-black rounded-2xl hover:bg-zinc-200 transition-all active:scale-[0.98] shadow-xl shadow-white/5 uppercase tracking-widest text-xs mt-4"
             >
-              INITIALIZE_SYSTEM
+              Start Session
             </button>
-            <button onClick={() => window.location.href = '/'} className="w-full text-zinc-700 text-[10px] font-bold uppercase tracking-widest hover:text-zinc-500 transition-colors">Abort Mission</button>
+            
+            <div className="pt-6 text-center border-t border-white/5 mt-6">
+              <button 
+                onClick={() => window.location.href = '/'} 
+                className="text-zinc-700 text-[10px] font-black uppercase tracking-[0.3em] hover:text-zinc-400 transition-colors"
+              >
+                ← Back to Matrix
+              </button>
+            </div>
           </div>
         </div>
       </div>
