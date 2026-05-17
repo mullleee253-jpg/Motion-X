@@ -21,8 +21,8 @@ export default function AdminPage() {
     }
   }, [messages, selectedUserChat]);
 
-  const chatUsers = Array.from(new Set(messages.map(m => m.from === 'Admin' ? m.to : m.from))).filter(u => u !== 'Admin');
-  const currentChatMessages = messages.filter(m => m.from === selectedUserChat || m.to === selectedUserChat);
+  const chatUsers = Array.from(new Set((messages || []).map(m => m.from === 'Admin' ? m.to : m.from))).filter(u => u !== 'Admin');
+  const currentChatMessages = (messages || []).filter(m => m.from === selectedUserChat || m.to === selectedUserChat);
 
   const [nw, setNw] = useState<Partial<Workout>>({
     title: '', description: '', level: 'Средний', category: 'Сила', premium: false, emoji: '⚡', steps: []

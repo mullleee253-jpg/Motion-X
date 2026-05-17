@@ -40,7 +40,7 @@ function AppInner() {
     return <AdminPage />;
   }
 
-  if (user) {
+  if (user && !user.isAdmin) {
     return (
       <>
         <WorkoutsPage />

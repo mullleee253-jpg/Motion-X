@@ -80,11 +80,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Real-time Message Polling (simulated)
   useEffect(() => {
     const interval = setInterval(() => {
-      const latest = getMessages();
-      if (latest.length !== messages.length) {
-        setMessages(latest);
+      try {
+        const latest = getMessages();
+        if (latest && latest.length !== messages.length) {
+          setMessages(latest);
+        }
+      } catch (e) {
+        console.error("Polling error", e);
       }
-    }, 2000); // Проверка каждые 2 секунды
+    }, 3000);
     return () => clearInterval(interval);
   }, [messages.length]);
 
