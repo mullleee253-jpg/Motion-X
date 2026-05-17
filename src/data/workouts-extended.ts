@@ -1,5 +1,39 @@
 import { Workout } from '../types';
 
+// Реальные упражнения для каждого уровня
+const exercises = {
+  free: [
+    { name: 'Приседания', duration: 180 },
+    { name: 'Отжимания', duration: 120 },
+    { name: 'Планка', duration: 60 },
+    { name: 'Выпады', duration: 180 },
+    { name: 'Скручивания', duration: 120 },
+    { name: 'Бег на месте', duration: 180 },
+    { name: 'Прыжки', duration: 120 },
+    { name: 'Растяжка', duration: 180 },
+  ],
+  standard: [
+    { name: 'Бёрпи', duration: 240 },
+    { name: 'Высокие колени', duration: 180 },
+    { name: 'Скалолаз', duration: 180 },
+    { name: 'Выпрыгивания', duration: 180 },
+    { name: 'Планка с поворотом', duration: 120 },
+    { name: 'Отжимания широким хватом', duration: 180 },
+    { name: 'Болгарские выпады', duration: 240 },
+    { name: 'Русский твист', duration: 180 },
+  ],
+  pro: [
+    { name: 'Бёрпи с отжиманием', duration: 300 },
+    { name: 'Прыжки на ящик', duration: 240 },
+    { name: 'Пистолетики', duration: 240 },
+    { name: 'Отжимания на одной руке', duration: 180 },
+    { name: 'Планка 2 минуты', duration: 120 },
+    { name: 'Взрывные отжимания', duration: 240 },
+    { name: 'Спринт 100%', duration: 180 },
+    { name: 'Подъёмы ног в висе', duration: 180 },
+  ],
+};
+
 // Генератор тренировок для быстрого создания
 const generateWorkout = (id: number, tier: 'free' | 'standard' | 'pro'): Workout => {
   const templates = {
@@ -25,6 +59,19 @@ const generateWorkout = (id: number, tier: 'free' | 'standard' | 'pro'): Workout
 
   const template = templates[tier][id % templates[tier].length];
   const tierNames = { free: 'FREE', standard: 'STANDARD', pro: 'PRO' };
+  const tierExercises = exercises[tier];
+  
+  // Генерируем реальные шаги тренировки
+  const steps = [];
+  const numExercises = tier === 'free' ? 4 : tier === 'standard' ? 5 : 6;
+  
+  for (let i = 0; i < numExercises; i++) {
+    const exercise = tierExercises[i % tierExercises.length];
+    steps.push({ name: exercise.name, duration: exercise.duration, type: 'exercise' as const });
+    if (i < numExercises - 1) {
+      steps.push({ name: 'Отдых', duration: 60, type: 'rest' as const });
+    }
+  }
   
   return {
     id,
@@ -36,14 +83,7 @@ const generateWorkout = (id: number, tier: 'free' | 'standard' | 'pro'): Workout
     premium: tier !== 'free',
     tier,
     emoji: template.emoji,
-    steps: [
-      { name: 'Разминка', duration: 180, type: 'exercise' },
-      { name: 'Отдых', duration: 60, type: 'rest' },
-      { name: 'Основной блок', duration: 300, type: 'exercise' },
-      { name: 'Отдых', duration: 60, type: 'rest' },
-      { name: 'Интенсив', duration: 240, type: 'exercise' },
-      { name: 'Заминка', duration: 180, type: 'rest' },
-    ],
+    steps,
   };
 };
 
