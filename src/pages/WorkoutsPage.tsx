@@ -17,6 +17,19 @@ export default function WorkoutsPage() {
   // Форсируем обновление при изменении тарифа
   useEffect(() => {
     forceUpdate(prev => prev + 1);
+    // Принудительно перезагружаем тренировки
+    const reloadWorkouts = async () => {
+      try {
+        const res = await fetch('/api/workouts');
+        if (res.ok) {
+          const workouts = await res.json();
+          console.log('Reloaded workouts:', workouts.length);
+        }
+      } catch (e) {
+        console.error('Failed to reload workouts');
+      }
+    };
+    reloadWorkouts();
   }, [user?.subscriptionTier, user?.isPremium]);
   
   // Фильтруем тренировки по табу (показываем все, но блокируем недоступные)
@@ -81,6 +94,14 @@ export default function WorkoutsPage() {
           <div>
             <h1 className="text-5xl font-black tracking-tighter mb-2">ТРЕНИРОВКИ</h1>
             <p className="text-zinc-500 font-medium">Выбери свою программу на сегодня</p>
+            {process.env.NODE_ENV === 'development' && (
+              <button 
+                onClick={() => window.location.reload()} 
+                className="text-xs text-zinc-700 hover:text-white mt-2"
+              >
+                🔄 Reload ({allWorkouts.length} workouts)
+              </button>
+            )}
           </div>
           
           <div className="flex p-1.5 bg-zinc-900/50 rounded-2xl border border-white/5">
