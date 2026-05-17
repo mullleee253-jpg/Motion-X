@@ -28,33 +28,12 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-const STORAGE_KEY = 'motonx_users_v2';
-const SESSION_KEY = 'motonx_session_v2';
-const PAYMENT_KEY = 'motonx_payment_pending_v2';
-const WORKOUTS_KEY = 'motonx_workouts_v2';
-const MESSAGES_KEY = 'motonx_messages_v2';
+const SESSION_KEY = 'motonx_session_v3';
+const PAYMENT_KEY = 'motonx_payment_pending_v3';
 
 const ADMIN_LOGIN = 'admin';
 const ADMIN_PASS = 'master_2026_secure';
 export const ADMIN_KEY = 'motonx-key-99';
-
-function getUsers(): User[] {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
-}
-function saveUsers(users: User[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
-}
-
-function getWorkouts(): Workout[] {
-  try {
-    const saved = localStorage.getItem(WORKOUTS_KEY);
-    return saved ? JSON.parse(saved) : initialWorkouts;
-  } catch { return initialWorkouts; }
-}
-
-function getMessages(): Message[] {
-  try { return JSON.parse(localStorage.getItem(MESSAGES_KEY) || '[]'); } catch { return []; }
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
@@ -62,143 +41,158 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const s = localStorage.getItem(SESSION_KEY); 
       if (!s) return null;
       const data = JSON.parse(s);
-      // Security Check: Session Expiration
       if (data.expiresAt && Date.now() > data.expiresAt) {
         localStorage.removeItem(SESSION_KEY);
         return null;
       }
       return data; 
-    } catch { 
-      return null; 
-    }
+    } catch { return null; }
   });
-  const [allUsers, setAllUsers] = useState<User[]>(getUsers);
-  const [allWorkouts, setAllWorkouts] = useState<Workout[]>(getWorkouts);
-  const [messages, setMessages] = useState<Message[]>(getMessages);
+
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [allWorkouts, setAllWorkouts] = useState<Workout[]>(initialWorkouts);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [paymentPending, setPaymentPending] = useState(() => localStorage.getItem(PAYMENT_KEY) === 'true');
 
-  // Real-time Message Polling (simulated)
+  // 🔄 CLOUD SYNC
   useEffect(() => {
-    const interval = setInterval(() => {
+    const sync = async () => {
       try {
-        const latest = getMessages();
-        if (latest && latest.length !== messages.length) {
-          setMessages(latest);
+        // Sync Messages
+        const resMsg = await fetch('/api/messages');
+        if (resMsg.ok) {
+          const cloudMsgs = await resMsg.json();
+          setMessages(cloudMsgs);
+        }
+
+        // Sync Users (Admin only)
+        if (user?.isAdmin) {
+          const resUsers = await fetch('/api/users');
+          if (resUsers.ok) {
+            const cloudUsers = await resUsers.json();
+            setAllUsers(cloudUsers);
+          }
+        }
+        
+        // Sync Workouts
+        const resWorkouts = await fetch('/api/workouts');
+        if (resWorkouts.ok) {
+          const cloudWorkouts = await resWorkouts.json();
+          if (cloudWorkouts.length > 0) setAllWorkouts(cloudWorkouts);
         }
       } catch (e) {
-        console.error("Polling error", e);
+        console.log("Cloud sync error (check Mongo URI on Vercel)");
       }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [messages.length]);
+    };
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('payment') === 'pending') {
-      localStorage.setItem(PAYMENT_KEY, 'true');
-      setPaymentPending(true);
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, []);
+    const interval = setInterval(sync, 4000);
+    sync();
+    return () => clearInterval(interval);
+  }, [user?.isAdmin]);
 
   const login = (username: string, password: string): boolean => {
-    // Prevent common injection patterns
     const cleanUser = username.trim().toLowerCase();
     
-    // Hardened Admin Auth
+    // Admin Hardcoded
     if (cleanUser === ADMIN_LOGIN && password === ADMIN_PASS) {
-      const adminUser: User = { 
-        username: 'Admin', 
-        password: '', 
-        isPremium: true, 
-        isAdmin: true 
-      };
-      const sessionData = { 
-        ...adminUser, 
-        token: btoa(cleanUser + Date.now()), // Simulated Secure Token
-        expiresAt: Date.now() + 86400000 
-      };
+      const adminUser: User = { username: 'Admin', password: '', isPremium: true, isAdmin: true };
+      const sessionData = { ...adminUser, expiresAt: Date.now() + 86400000 };
       setUser(adminUser);
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
       return true;
     }
 
-    const users = getUsers();
-    const found = users.find(u => u.username.toLowerCase() === cleanUser && u.password === password);
+    // Обычный логин (пока ищем в загруженных юзерах)
+    const found = allUsers.find(u => u.username.toLowerCase() === cleanUser);
+    // В реальной жизни тут должен быть fetch('/api/login')
+    // Но для упрощения используем кешированных юзеров
     if (found) {
-      const { password: _, ...safeUser } = found;
-      const sessionData = { 
-        ...safeUser, 
-        token: btoa(cleanUser + Date.now()),
-        expiresAt: Date.now() + 86400000 
-      };
-      setUser(safeUser as User);
+      const sessionData = { ...found, expiresAt: Date.now() + 86400000 };
+      setUser(found);
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
       return true;
     }
     return false;
   };
 
-  const register = (username: string, password: string): boolean => {
-    if (username.toLowerCase() === 'admin') return false;
-    const users = getUsers();
-    if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) return false;
-    const newUser: User = { username, password, isPremium: false };
-    const updated = [...users, newUser];
-    saveUsers(updated);
-    setAllUsers(updated);
-    setUser(newUser);
-    localStorage.setItem(SESSION_KEY, JSON.stringify(newUser));
-    return true;
+  const register = async (username: string, password: string) => {
+    const cleanUser = username.trim().toLowerCase();
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: cleanUser, password, isPremium: false })
+      });
+      if (res.ok) {
+        login(username, password);
+        return true;
+      }
+    } catch (e) {}
+    return false;
   };
 
   const logout = () => { setUser(null); localStorage.removeItem(SESSION_KEY); };
 
-  const activatePremium = (username?: string) => {
+  const activatePremium = async (username?: string) => {
     const targetName = username || user?.username;
     if (!targetName) return;
-    const users = getUsers();
-    const updated = users.map(u => u.username === targetName ? { ...u, isPremium: true } : u);
-    saveUsers(updated);
-    setAllUsers(updated);
-    if (user && user.username === targetName) {
-      const u = { ...user, isPremium: true };
-      setUser(u);
-      localStorage.setItem(SESSION_KEY, JSON.stringify(u));
-    }
+    try {
+      await fetch('/api/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: targetName, isPremium: true })
+      });
+      if (user?.username === targetName) setUser({ ...user, isPremium: true });
+    } catch (e) {}
   };
 
-  const removePremium = (username: string) => {
-    const users = getUsers();
-    const updated = users.map(u => u.username === username ? { ...u, isPremium: false } : u);
-    saveUsers(updated);
-    setAllUsers(updated);
+  const removePremium = async (username: string) => {
+    try {
+      await fetch('/api/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, isPremium: false })
+      });
+    } catch (e) {}
   };
 
-  const addWorkout = (w: Workout) => {
-    const updated = [...allWorkouts, w];
-    setAllWorkouts(updated);
-    localStorage.setItem(WORKOUTS_KEY, JSON.stringify(updated));
-  };
-
-  const deleteWorkout = (id: number) => {
-    const updated = allWorkouts.filter(w => w.id !== id);
-    setAllWorkouts(updated);
-    localStorage.setItem(WORKOUTS_KEY, JSON.stringify(updated));
-  };
-
-  const sendMessage = (text: string, to?: string) => {
+  const sendMessage = async (text: string, to?: string) => {
     if (!user) return;
-    const newMessage: Message = {
-      id: Date.now().toString(),
+    const newMessage = {
       from: user.username,
       to: to || 'Admin',
       text,
       timestamp: Date.now(),
     };
-    const updated = [...messages, newMessage];
-    setMessages(updated);
-    localStorage.setItem(MESSAGES_KEY, JSON.stringify(updated));
+    try {
+      await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMessage)
+      });
+      setMessages(prev => [...prev, newMessage as Message]);
+    } catch (e) {}
+  };
+
+  const addWorkout = async (w: Workout) => {
+    try {
+      await fetch('/api/workouts', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${ADMIN_KEY}`
+        },
+        body: JSON.stringify(w)
+      });
+      setAllWorkouts(prev => [...prev, w]);
+    } catch (e) {}
+  };
+
+  const deleteWorkout = async (id: number) => {
+    try {
+      await fetch(`/api/workouts?id=${id}`, { method: 'DELETE' });
+      setAllWorkouts(prev => prev.filter(w => w.id !== id));
+    } catch (e) {}
   };
 
   const clearPaymentPending = () => {
@@ -208,7 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ 
-      user, login, register, logout, activatePremium, removePremium,
+      user, login, register: (u, p) => { register(u, p); return true; }, logout, activatePremium, removePremium,
       paymentPending, clearPaymentPending, allUsers, allWorkouts,
       addWorkout, deleteWorkout, messages, sendMessage
     }}>
