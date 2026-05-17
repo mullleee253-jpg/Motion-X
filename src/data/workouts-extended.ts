@@ -3,86 +3,127 @@ import { Workout } from '../types';
 // Реальные упражнения для каждого уровня
 const exercises = {
   free: [
-    { name: 'Приседания', duration: 180 },
-    { name: 'Отжимания', duration: 120 },
-    { name: 'Планка', duration: 60 },
-    { name: 'Выпады', duration: 180 },
-    { name: 'Скручивания', duration: 120 },
+    { name: 'Приседания x20', duration: 180 },
+    { name: 'Отжимания x15', duration: 120 },
+    { name: 'Планка 60 сек', duration: 60 },
+    { name: 'Выпады x16', duration: 180 },
+    { name: 'Скручивания x25', duration: 120 },
     { name: 'Бег на месте', duration: 180 },
-    { name: 'Прыжки', duration: 120 },
-    { name: 'Растяжка', duration: 180 },
+    { name: 'Прыжки x30', duration: 120 },
+    { name: 'Растяжка ног', duration: 180 },
+    { name: 'Подъёмы на носки x30', duration: 120 },
+    { name: 'Наклоны вперёд', duration: 120 },
+    { name: 'Круговые движения руками', duration: 120 },
+    { name: 'Ходьба на месте', duration: 180 },
   ],
   standard: [
-    { name: 'Бёрпи', duration: 240 },
-    { name: 'Высокие колени', duration: 180 },
-    { name: 'Скалолаз', duration: 180 },
-    { name: 'Выпрыгивания', duration: 180 },
+    { name: 'Бёрпи x15', duration: 240 },
+    { name: 'Высокие колени x40', duration: 180 },
+    { name: 'Скалолаз x30', duration: 180 },
+    { name: 'Выпрыгивания x20', duration: 180 },
     { name: 'Планка с поворотом', duration: 120 },
-    { name: 'Отжимания широким хватом', duration: 180 },
-    { name: 'Болгарские выпады', duration: 240 },
-    { name: 'Русский твист', duration: 180 },
+    { name: 'Отжимания широким хватом x20', duration: 180 },
+    { name: 'Болгарские выпады x15', duration: 240 },
+    { name: 'Русский твист x40', duration: 180 },
+    { name: 'Велосипед x40', duration: 180 },
+    { name: 'Подъёмы ног x25', duration: 180 },
+    { name: 'Трицепс дайпы x20', duration: 180 },
+    { name: 'Ягодичный мост x25', duration: 180 },
   ],
   pro: [
-    { name: 'Бёрпи с отжиманием', duration: 300 },
-    { name: 'Прыжки на ящик', duration: 240 },
-    { name: 'Пистолетики', duration: 240 },
-    { name: 'Отжимания на одной руке', duration: 180 },
+    { name: 'Бёрпи с отжиманием x20', duration: 300 },
+    { name: 'Прыжки на ящик x15', duration: 240 },
+    { name: 'Пистолетики x10', duration: 240 },
+    { name: 'Отжимания с хлопком x15', duration: 180 },
     { name: 'Планка 2 минуты', duration: 120 },
-    { name: 'Взрывные отжимания', duration: 240 },
-    { name: 'Спринт 100%', duration: 180 },
-    { name: 'Подъёмы ног в висе', duration: 180 },
+    { name: 'Взрывные отжимания x20', duration: 240 },
+    { name: 'Спринт 100% 30 сек', duration: 180 },
+    { name: 'Подъёмы ног в висе x20', duration: 180 },
+    { name: 'Супермен x30', duration: 180 },
+    { name: 'Берпи x30', duration: 300 },
+    { name: 'Скалолаз x50', duration: 240 },
+    { name: 'Приседания x50', duration: 300 },
   ],
 };
 
-// Генератор тренировок для быстрого создания
-const generateWorkout = (id: number, tier: 'free' | 'standard' | 'pro'): Workout => {
-  const templates = {
-    free: [
-      { title: 'Базовое кардио', emoji: '🏃', level: 'Легкий', category: 'Кардио' },
-      { title: 'Простая растяжка', emoji: '🧘', level: 'Легкий', category: 'Растяжка' },
-      { title: 'Легкая сила', emoji: '💪', level: 'Легкий', category: 'Сила' },
-      { title: 'Утренняя зарядка', emoji: '🌅', level: 'Легкий', category: 'Разминка' },
-    ],
-    standard: [
-      { title: 'Интенсив кардио', emoji: '🔥', level: 'Средний', category: 'Кардио' },
-      { title: 'Силовая база', emoji: '💎', level: 'Средний', category: 'Сила' },
-      { title: 'HIIT тренировка', emoji: '⚡', level: 'Средний', category: 'HIIT' },
-      { title: 'Функциональная', emoji: '🎯', level: 'Средний', category: 'Функциональная' },
-    ],
-    pro: [
-      { title: 'Экстрим сила', emoji: '👹', level: 'Хардкор', category: 'Сила' },
-      { title: 'Выносливость MAX', emoji: '🦍', level: 'Экстрим', category: 'Выносливость' },
-      { title: 'Спартанская', emoji: '🛡️', level: 'Экстрим', category: 'Сила' },
-      { title: 'Адский HIIT', emoji: '🌋', level: 'Экстрим', category: 'HIIT' },
-    ],
-  };
+// Уникальные названия тренировок
+const workoutNames = {
+  free: [
+    'Утренний заряд', 'Лёгкий старт', 'Базовая сила', 'Простое кардио',
+    'Растяжка и тонус', 'Разминка тела', 'Мягкая нагрузка', 'Активация мышц',
+    'Пробуждение', 'Энергия утра', 'Лёгкая активность', 'Базовый комплекс',
+    'Простая тренировка', 'Начальный уровень', 'Разогрев', 'Тонус тела',
+    'Лёгкий фитнес', 'Базовое движение', 'Простые упражнения', 'Старт дня'
+  ],
+  standard: [
+    'Интенсив', 'Силовой блок', 'HIIT сессия', 'Функциональная',
+    'Кардио взрыв', 'Мощная база', 'Средний уровень', 'Активная тренировка',
+    'Динамика', 'Сила и выносливость'
+  ],
+  pro: [
+    'Экстрим', 'Максимум', 'Хардкор', 'Спартанец',
+    'Зверь режим', 'Адская тренировка', 'Предел возможностей', 'Титан',
+    'Железная воля', 'Монстр сила', 'Выносливость MAX', 'Огонь',
+    'Взрывная мощь', 'Легенда', 'Чемпион', 'Воин',
+    'Непобедимый', 'Сверхчеловек', 'Абсолют', 'Финальный босс'
+  ],
+};
 
-  const template = templates[tier][id % templates[tier].length];
-  const tierNames = { free: 'FREE', standard: 'STANDARD', pro: 'PRO' };
+const emojis = {
+  free: ['🌅', '🧘', '💪', '🏃', '🌊', '☀️', '🌸', '🍃'],
+  standard: ['🔥', '💎', '⚡', '🎯', '💥', '🚀', '⭐', '🏆'],
+  pro: ['👹', '🦍', '🛡️', '🌋', '⚔️', '💀', '🔱', '👑'],
+};
+
+// Генератор тренировок
+const generateWorkout = (id: number, tier: 'free' | 'standard' | 'pro'): Workout => {
   const tierExercises = exercises[tier];
+  const names = workoutNames[tier];
+  const emojiList = emojis[tier];
   
-  // Генерируем реальные шаги тренировки
+  const name = names[(id - 1) % names.length];
+  const emoji = emojiList[(id - 1) % emojiList.length];
+  
+  // Генерируем уникальные шаги для каждой тренировки
   const steps = [];
   const numExercises = tier === 'free' ? 4 : tier === 'standard' ? 5 : 6;
+  const startIndex = ((id - 1) * 3) % tierExercises.length;
   
   for (let i = 0; i < numExercises; i++) {
-    const exercise = tierExercises[i % tierExercises.length];
+    const exerciseIndex = (startIndex + i) % tierExercises.length;
+    const exercise = tierExercises[exerciseIndex];
     steps.push({ name: exercise.name, duration: exercise.duration, type: 'exercise' as const });
     if (i < numExercises - 1) {
       steps.push({ name: 'Отдых', duration: 60, type: 'rest' as const });
     }
   }
   
+  const levels = {
+    free: ['Легкий', 'Начальный', 'Базовый'],
+    standard: ['Средний', 'Продвинутый', 'Интенсивный'],
+    pro: ['Хардкор', 'Экстрим', 'Профессиональный'],
+  };
+  
+  const categories = {
+    free: ['Разминка', 'Кардио', 'Сила', 'Растяжка'],
+    standard: ['Кардио', 'Сила', 'HIIT', 'Функциональная'],
+    pro: ['Сила', 'Выносливость', 'HIIT', 'Экстрим'],
+  };
+  
+  const level = levels[tier][(id - 1) % levels[tier].length];
+  const category = categories[tier][(id - 1) % categories[tier].length];
+  const tierNames = { free: 'FREE', standard: 'STANDARD', pro: 'PRO' };
+  
   return {
     id,
-    title: `${template.title} #${id}`,
-    description: `Программа уровня ${tierNames[tier]}. ${template.level} уровень сложности.`,
+    title: name,
+    description: `Программа уровня ${tierNames[tier]}. ${level} уровень сложности.`,
     duration: tier === 'free' ? '20 мин' : tier === 'standard' ? '30 мин' : '45 мин',
-    level: template.level,
-    category: template.category,
+    level,
+    category,
     premium: tier !== 'free',
     tier,
-    emoji: template.emoji,
+    emoji,
     steps,
   };
 };

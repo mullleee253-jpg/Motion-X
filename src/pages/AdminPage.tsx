@@ -200,8 +200,7 @@ export default function AdminPage() {
                         headers: { 'Authorization': `Bearer ${ADMIN_KEY}` }
                       });
                     }
-                    alert('Все тренировки удалены!');
-                    window.location.reload();
+                    alert('Все тренировки удалены! Обновление через 4 секунды...');
                   } catch (e) {
                     alert('Ошибка при удалении');
                   }
@@ -233,8 +232,7 @@ export default function AdminPage() {
                       await addWorkout(w);
                     }
                     
-                    alert(`${workouts.length} тренировок загружено в MongoDB!`);
-                    window.location.reload();
+                    alert(`${workouts.length} тренировок загружено! Обновление через 4 секунды...`);
                   } catch (e) {
                     alert('Ошибка при загрузке');
                   }
