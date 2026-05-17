@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Workout } from '../types';
-import { workouts as initialWorkouts } from '../data/workouts';
+import { workouts as initialWorkouts } from '../data/workouts-extended';
 
 interface Message {
   id: string;

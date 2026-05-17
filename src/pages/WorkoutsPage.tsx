@@ -10,7 +10,16 @@ export default function WorkoutsPage() {
   const [tab, setTab] = useState<'free' | 'pro'>('free');
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
 
-  const list = allWorkouts.filter(w => tab === 'free' ? !w.premium : w.premium);
+  // Определяем уровень доступа пользователя
+  const userTier = user?.subscriptionTier || (user?.isPremium ? 'pro' : 'free');
+  
+  // Фильтруем тренировки по табу и доступу
+  const list = allWorkouts.filter(w => {
+    // Показываем бесплатные в табе "free"
+    if (tab === 'free') return !w.premium && (!w.tier || w.tier === 'free');
+    // Показываем платные в табе "pro"
+    return w.premium || (w.tier && w.tier !== 'free');
+  });
 
   if (selectedWorkout) {
     return <WorkoutTimer workout={selectedWorkout} onClose={() => setSelectedWorkout(null)} />;
@@ -27,7 +36,9 @@ export default function WorkoutsPage() {
         
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">
-            <div className="text-xs font-black uppercase text-zinc-500 tracking-widest">{user?.isPremium ? 'PRO Member' : 'Basic Plan'}</div>
+            <div className="text-xs font-black uppercase text-zinc-500 tracking-widest">
+              {user?.subscriptionTier === 'pro' ? 'PRO Member' : user?.subscriptionTier === 'standard' ? 'Standard Member' : user?.isPremium ? 'PRO Member' : 'Free Plan'}
+            </div>
             <div className="text-sm font-bold">{user?.username}</div>
           </div>
           <button onClick={logout} className="w-10 h-10 rounded-xl bg-zinc-900 border border-white/5 flex items-center justify-center hover:bg-zinc-800 transition-all text-sm">✕</button>
@@ -77,7 +88,11 @@ export default function WorkoutsPage() {
         {/* Workout Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {list.map((w, i) => {
-            const locked = w.premium && !user?.isPremium;
+            // Проверяем доступ по тарифу
+            const workoutTier = w.tier || (w.premium ? 'pro' : 'free');
+            const locked = (workoutTier === 'standard' && userTier === 'free') || 
+                          (workoutTier === 'pro' && userTier !== 'pro');
+            
             return (
               <div 
                 key={w.id}
@@ -131,26 +146,52 @@ export default function WorkoutsPage() {
           })}
         </div>
 
-        {/* PRO Upsell */}
+        {/* Pricing Cards */}
         {!user?.isPremium && (
-          <div className="mt-20 card-premium p-12 rounded-[48px] bg-gradient-to-br from-orange-500/20 to-transparent border-orange-500/20 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] translate-x-1/2 -translate-y-1/2" />
-            <div className="max-w-md">
-              <h2 className="text-4xl font-black tracking-tighter mb-4 italic uppercase">MotonX PRO 👑</h2>
-              <p className="text-zinc-400 text-lg leading-relaxed mb-6">Открой все секретные программы, хардкорные уровни и расширенную аналитику тренировок.</p>
-              <ul className="grid grid-cols-2 gap-3 text-xs font-bold text-zinc-500 uppercase tracking-widest mb-8">
-                <li>✓ 12+ Тренировок</li>
-                <li>✓ Без рекламы</li>
-                <li>✓ Кастомные таймеры</li>
-                <li>✓ 24/7 Поддержка</li>
-              </ul>
+          <div className="mt-20 space-y-6">
+            {/* Standard Tier */}
+            <div className="card-premium p-10 rounded-[40px] bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full blur-[80px] translate-x-1/2 -translate-y-1/2" />
+              <div className="max-w-md">
+                <h2 className="text-3xl font-black tracking-tighter mb-3 italic uppercase">MotonX Standard 💎</h2>
+                <p className="text-zinc-400 text-base leading-relaxed mb-5">30 программ и базовая аналитика для серьезных тренировок.</p>
+                <ul className="grid grid-cols-2 gap-2.5 text-xs font-bold text-zinc-500 uppercase tracking-widest">
+                  <li>✓ 30 тренировок</li>
+                  <li>✓ Базовая аналитика</li>
+                  <li>✓ Без рекламы</li>
+                  <li>✓ Поддержка 24/7</li>
+                </ul>
+              </div>
+              <button 
+                onClick={() => window.location.href = PAYMENT_URL + '?tier=standard&payment=pending'}
+                className="px-10 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-black text-lg rounded-2xl shadow-2xl shadow-blue-500/30 whitespace-nowrap active:scale-95 transition-all"
+              >
+                UPGRADE — 299₽
+              </button>
             </div>
-            <button 
-              onClick={() => window.location.href = PAYMENT_URL + '?payment=pending'}
-              className="px-12 py-5 btn-premium text-white font-black text-xl rounded-2xl shadow-2xl shadow-orange-500/30 whitespace-nowrap active:scale-95 transition-all"
-            >
-              UPGRADE — 299₽
-            </button>
+
+            {/* Pro Tier */}
+            <div className="card-premium p-12 rounded-[48px] bg-gradient-to-br from-orange-500/20 to-transparent border-orange-500/20 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px] translate-x-1/2 -translate-y-1/2" />
+              <div className="max-w-md">
+                <h2 className="text-4xl font-black tracking-tighter mb-4 italic uppercase">MotonX PRO 👑</h2>
+                <p className="text-zinc-400 text-lg leading-relaxed mb-6">50+ эксклюзивных программ, персональные рекомендации и приоритетная поддержка.</p>
+                <ul className="grid grid-cols-2 gap-3 text-xs font-bold text-zinc-500 uppercase tracking-widest mb-8">
+                  <li>✓ 50+ тренировок</li>
+                  <li>✓ Эксклюзивные программы</li>
+                  <li>✓ Персональные рекомендации</li>
+                  <li>✓ Приоритетная поддержка</li>
+                  <li>✓ Расширенная статистика</li>
+                  <li>✓ Кастомные таймеры</li>
+                </ul>
+              </div>
+              <button 
+                onClick={() => window.location.href = PAYMENT_URL + '?tier=pro&payment=pending'}
+                className="px-12 py-5 btn-premium text-white font-black text-xl rounded-2xl shadow-2xl shadow-orange-500/30 whitespace-nowrap active:scale-95 transition-all"
+              >
+                UPGRADE — 399₽
+              </button>
+            </div>
           </div>
         )}
       </main>

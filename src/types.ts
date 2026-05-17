@@ -2,6 +2,7 @@ export interface User {
   username: string;
   password: string;
   isPremium: boolean;
+  subscriptionTier?: 'free' | 'standard' | 'pro'; // Новое поле
   isAdmin?: boolean;
 }
 
@@ -19,6 +20,7 @@ export interface Workout {
   level: string;
   category: string;
   premium: boolean;
+  tier?: 'free' | 'standard' | 'pro'; // Новое поле для уровня доступа
   emoji: string;
   steps: WorkoutStep[];
 }

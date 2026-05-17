@@ -214,7 +214,7 @@ export default function AdminPage() {
                 onClick={async () => {
                   if (!confirm('Загрузить начальные тренировки? Существующие с такими же ID будут заменены.')) return;
                   try {
-                    const { workouts } = await import('../data/workouts');
+                    const { workouts } = await import('../data/workouts-extended');
                     
                     // Сначала удаляем все существующие
                     const res = await fetch('/api/workouts');

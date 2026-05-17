@@ -10,6 +10,7 @@ export const workouts: Workout[] = [
     level: 'Легкий',
     category: 'Разминка',
     premium: false,
+    tier: 'free',
     emoji: '🌅',
     steps: [
       { name: 'Ходьба на месте', duration: 180, type: 'exercise' },
