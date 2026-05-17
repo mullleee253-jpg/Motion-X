@@ -4,10 +4,10 @@ import { Workout } from '../types';
 const generateWorkout = (id: number, tier: 'free' | 'standard' | 'pro'): Workout => {
   const templates = {
     free: [
-      { title: 'Утренняя зарядка', emoji: '🌅', level: 'Легкий', category: 'Разминка' },
-      { title: 'Базовое кардио', emoji: '🏃', level: 'Средний', category: 'Кардио' },
+      { title: 'Базовое кардио', emoji: '🏃', level: 'Легкий', category: 'Кардио' },
       { title: 'Простая растяжка', emoji: '🧘', level: 'Легкий', category: 'Растяжка' },
       { title: 'Легкая сила', emoji: '💪', level: 'Легкий', category: 'Сила' },
+      { title: 'Утренняя зарядка', emoji: '🌅', level: 'Легкий', category: 'Разминка' },
     ],
     standard: [
       { title: 'Интенсив кардио', emoji: '🔥', level: 'Средний', category: 'Кардио' },
@@ -24,11 +24,12 @@ const generateWorkout = (id: number, tier: 'free' | 'standard' | 'pro'): Workout
   };
 
   const template = templates[tier][id % templates[tier].length];
+  const tierNames = { free: 'FREE', standard: 'STANDARD', pro: 'PRO' };
   
   return {
     id,
     title: `${template.title} #${id}`,
-    description: `Программа уровня ${tier.toUpperCase()}. ${template.level} уровень сложности.`,
+    description: `Программа уровня ${tierNames[tier]}. ${template.level} уровень сложности.`,
     duration: tier === 'free' ? '20 мин' : tier === 'standard' ? '30 мин' : '45 мин',
     level: template.level,
     category: template.category,

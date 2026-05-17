@@ -75,6 +75,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
         
+        // Sync current user data (для real-time обновления тарифа)
+        if (user && !user.isAdmin) {
+          const resUsers = await fetch('/api/users');
+          if (resUsers.ok) {
+            const cloudUsers = await resUsers.json();
+            const currentUser = cloudUsers.find((u: User) => u.username.toLowerCase() === user.username.toLowerCase());
+            if (currentUser && (currentUser.subscriptionTier !== user.subscriptionTier || currentUser.isPremium !== user.isPremium)) {
+              const updatedUser = { ...user, subscriptionTier: currentUser.subscriptionTier, isPremium: currentUser.isPremium };
+              setUser(updatedUser);
+              localStorage.setItem(SESSION_KEY, JSON.stringify({ ...updatedUser, expiresAt: Date.now() + 86400000 }));
+            }
+          }
+        }
+        
         // Sync Workouts - ТОЛЬКО если в базе есть данные, иначе используем локальные
         const resWorkouts = await fetch('/api/workouts');
         if (resWorkouts.ok) {
@@ -93,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const interval = setInterval(sync, 4000);
     sync();
     return () => clearInterval(interval);
-  }, [user?.isAdmin]);
+  }, [user?.isAdmin, user?.username]);
 
   const login = async (username: string, password: string): Promise<boolean> => {
     const cleanUser = username.trim().toLowerCase();
