@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Workout } from '../types';
 import WorkoutTimer from '../components/WorkoutTimer';
@@ -17,16 +17,8 @@ export default function WorkoutsPage() {
   const list = allWorkouts.filter(w => {
     const workoutTier = w.tier || (w.premium ? 'pro' : 'free');
     
-    if (tab === 'free') {
-      return workoutTier === 'free';
-    }
-    if (tab === 'standard') {
-      return workoutTier === 'free' || workoutTier === 'standard';
-    }
-    if (tab === 'pro') {
-      return true; // Показываем все
-    }
-    return false;
+    // В каждом табе показываем ТОЛЬКО тренировки этого уровня
+    return workoutTier === tab;
   });
 
   if (selectedWorkout) {
