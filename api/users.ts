@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel.node';
+import { VercelRequest, VercelResponse } from '@vercel/node';
 import clientPromise from './lib/mongodb';
 
 export default async (req: VercelRequest, res: VercelResponse) => {
