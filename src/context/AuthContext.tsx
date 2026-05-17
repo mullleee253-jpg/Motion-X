@@ -76,13 +76,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
         
-        // Sync current user data (для real-time обновления тарифа)
+        // Sync current user data (для real-time обновления тарифа и проверки существования)
         if (user && !user.isAdmin) {
           const resUsers = await fetch('/api/users');
           if (resUsers.ok) {
             const cloudUsers = await resUsers.json();
             const currentUser = cloudUsers.find((u: User) => u.username.toLowerCase() === user.username.toLowerCase());
-            if (currentUser && (currentUser.subscriptionTier !== user.subscriptionTier || currentUser.isPremium !== user.isPremium)) {
+            
+            // Если пользователя нет в базе - выкидываем
+            if (!currentUser) {
+              logout();
+              return;
+            }
+            
+            // Обновляем тариф если изменился
+            if (currentUser.subscriptionTier !== user.subscriptionTier || currentUser.isPremium !== user.isPremium) {
               const updatedUser = { ...user, subscriptionTier: currentUser.subscriptionTier, isPremium: currentUser.isPremium };
               setUser(updatedUser);
               localStorage.setItem(SESSION_KEY, JSON.stringify({ ...updatedUser, expiresAt: Date.now() + 86400000 }));
