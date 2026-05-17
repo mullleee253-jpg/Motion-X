@@ -35,6 +35,15 @@ export default function WorkoutsPage() {
     return false;
   });
 
+  // Debug
+  console.log('Total workouts:', allWorkouts.length);
+  console.log('Workouts by tier:', {
+    free: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'free').length,
+    standard: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'standard').length,
+    pro: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'pro').length,
+  });
+  console.log('Current tab:', tab, 'Showing:', list.length);
+
   if (selectedWorkout) {
     return <WorkoutTimer workout={selectedWorkout} onClose={() => setSelectedWorkout(null)} />;
   }
@@ -81,6 +90,7 @@ export default function WorkoutsPage() {
           <div>
             <h1 className="text-5xl font-black tracking-tighter mb-2">ТРЕНИРОВКИ</h1>
             <p className="text-zinc-500 font-medium">Выбери свою программу на сегодня</p>
+            <p className="text-zinc-700 text-xs mt-1">Всего: {allWorkouts.length} | Показано: {list.length}</p>
           </div>
           
           <div className="flex p-1.5 bg-zinc-900/50 rounded-2xl border border-white/5">
