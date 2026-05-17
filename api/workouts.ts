@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import clientPromise from './lib/mongodb';
+import clientPromise from './lib/mongodb.js';
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   // 🛡 SECURITY: Проверка Origin (только твой домен)
