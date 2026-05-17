@@ -2,6 +2,14 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import clientPromise from './lib/mongodb';
 
 export default async (req: VercelRequest, res: VercelResponse) => {
+  // 🛡 SECURITY: Проверка Origin (только твой домен)
+  const origin = req.headers.origin || req.headers.referer;
+  const allowedHost = 'motion-x-ftpe.vercel.app';
+  
+  if (process.env.NODE_ENV === 'production' && origin && !origin.includes(allowedHost)) {
+    return res.status(403).json({ message: 'Forbidden: Cross-Origin request blocked' });
+  }
+
   // 🛡 SECURITY: Проверка авторизации на уровне сервера
   const authHeader = req.headers['authorization'];
   const ADMIN_SECRET = 'motonx-key-99'; // В идеале вынести в ENV
