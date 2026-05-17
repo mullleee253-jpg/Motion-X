@@ -57,5 +57,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     return res.status(200).json({ success: true });
   }
 
+  if (req.method === 'DELETE') {
+    const { username } = req.body;
+    await collection.deleteOne({ username: username.toLowerCase() });
+    return res.status(200).json({ success: true });
+  }
+
   return res.status(405).json({ message: 'Method not allowed' });
 };

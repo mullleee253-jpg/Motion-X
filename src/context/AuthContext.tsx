@@ -18,6 +18,7 @@ interface AuthContextType {
   activatePremium: (username?: string) => void;
   removePremium: (username: string) => void;
   setSubscriptionTier: (username: string, tier: 'free' | 'standard' | 'pro') => void;
+  deleteUser: (username: string) => void;
   paymentPending: boolean;
   clearPaymentPending: () => void;
   allUsers: User[];
@@ -289,9 +290,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPaymentPending(false);
   };
 
+  const deleteUser = async (username: string) => {
+    try {
+      const res = await fetch('/api/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      });
+      
+      if (res.ok) {
+        // Удаляем из локального списка
+        setAllUsers(prev => prev.filter(u => u.username.toLowerCase() !== username.toLowerCase()));
+      }
+    } catch (e) {
+      console.error('User deletion error:', e);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ 
-      user, login, register, logout, activatePremium, removePremium, setSubscriptionTier,
+      user, login, register, logout, activatePremium, removePremium, setSubscriptionTier, deleteUser,
       paymentPending, clearPaymentPending, allUsers, allWorkouts,
       addWorkout, deleteWorkout, messages, sendMessage
     }}>

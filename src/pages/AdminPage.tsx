@@ -3,7 +3,7 @@ import { useAuth, ADMIN_KEY } from '../context/AuthContext';
 import { Workout, WorkoutStep } from '../types';
 
 export default function AdminPage() {
-  const { user, login, allUsers, allWorkouts, activatePremium, removePremium, setSubscriptionTier, addWorkout, deleteWorkout, logout, messages, sendMessage } = useAuth();
+  const { user, login, allUsers, allWorkouts, activatePremium, removePremium, setSubscriptionTier, deleteUser, addWorkout, deleteWorkout, logout, messages, sendMessage } = useAuth();
   
   const [adminLogin, setAdminLogin] = useState('');
   const [adminPass, setAdminPass] = useState('');
@@ -298,6 +298,16 @@ export default function AdminPage() {
                     className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white"
                   >
                     Revoke
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Удалить пользователя ${u.username}?`)) {
+                        deleteUser(u.username);
+                      }
+                    }}
+                    className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-zinc-900 text-zinc-500 hover:bg-red-500 hover:text-white border border-zinc-800"
+                  >
+                    Delete
                   </button>
                 </div>
               </div>
