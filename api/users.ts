@@ -14,7 +14,22 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   if (req.method === 'POST') {
-    const { username, password, isPremium } = req.body;
+    const { username, password, isPremium, action } = req.body;
+    
+    // LOGIN ACTION
+    if (action === 'login') {
+      const user = await collection.findOne({ 
+        username: username.toLowerCase(),
+        password 
+      });
+      if (user) {
+        const { password: _, ...safeUser } = user;
+        return res.status(200).json(safeUser);
+      }
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    
+    // REGISTER ACTION
     // Проверка на существование
     const existing = await collection.findOne({ username: username.toLowerCase() });
     if (existing) return res.status(400).json({ message: 'User exists' });

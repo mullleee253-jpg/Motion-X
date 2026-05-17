@@ -102,18 +102,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     }
 
-    // Проверяем в базе через API
+    // Проверяем через API с action=login
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: cleanUser, password, action: 'login' })
+      });
+      
       if (res.ok) {
-        const users = await res.json();
-        const found = users.find((u: User) => u.username.toLowerCase() === cleanUser && u.password === password);
-        if (found) {
-          const sessionData = { ...found, expiresAt: Date.now() + 86400000 };
-          setUser(found);
-          localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-          return true;
-        }
+        const userData = await res.json();
+        const sessionData = { ...userData, expiresAt: Date.now() + 86400000 };
+        setUser(userData);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+        return true;
       }
     } catch (e) {
       console.error('Login error:', e);
