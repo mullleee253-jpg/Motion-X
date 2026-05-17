@@ -17,6 +17,7 @@ interface AuthContextType {
   logout: () => void;
   activatePremium: (username?: string) => void;
   removePremium: (username: string) => void;
+  setSubscriptionTier: (username: string, tier: 'free' | 'standard' | 'pro') => void;
   paymentPending: boolean;
   clearPaymentPending: () => void;
   allUsers: User[];
@@ -154,20 +155,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await fetch('/api/users', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: targetName, isPremium: true })
+        body: JSON.stringify({ username: targetName, isPremium: true, subscriptionTier: 'pro' })
       });
       
       if (res.ok) {
-        // Обновляем локальный список юзеров
+        // Обновляем локальный список юзеров СРАЗУ
         setAllUsers(prev => prev.map(u => 
           u.username.toLowerCase() === targetName.toLowerCase() 
-            ? { ...u, isPremium: true } 
+            ? { ...u, isPremium: true, subscriptionTier: 'pro' } 
             : u
         ));
         
         // Если это текущий юзер - обновляем его сессию
         if (user?.username === targetName) {
-          const updatedUser = { ...user, isPremium: true };
+          const updatedUser = { ...user, isPremium: true, subscriptionTier: 'pro' as const };
           setUser(updatedUser);
           localStorage.setItem(SESSION_KEY, JSON.stringify({ ...updatedUser, expiresAt: Date.now() + 86400000 }));
         }
@@ -182,19 +183,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await fetch('/api/users', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, isPremium: false })
+        body: JSON.stringify({ username, isPremium: false, subscriptionTier: 'free' })
       });
       
       if (res.ok) {
-        // Обновляем локальный список юзеров
+        // Обновляем локальный список юзеров СРАЗУ
         setAllUsers(prev => prev.map(u => 
           u.username.toLowerCase() === username.toLowerCase() 
-            ? { ...u, isPremium: false } 
+            ? { ...u, isPremium: false, subscriptionTier: 'free' } 
             : u
         ));
       }
     } catch (e) {
       console.error('Premium removal error:', e);
+    }
+  };
+
+  const setSubscriptionTier = async (username: string, tier: 'free' | 'standard' | 'pro') => {
+    try {
+      const res = await fetch('/api/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          username, 
+          subscriptionTier: tier,
+          isPremium: tier !== 'free'
+        })
+      });
+      
+      if (res.ok) {
+        // Обновляем локальный список юзеров СРАЗУ
+        setAllUsers(prev => prev.map(u => 
+          u.username.toLowerCase() === username.toLowerCase() 
+            ? { ...u, isPremium: tier !== 'free', subscriptionTier: tier } 
+            : u
+        ));
+        
+        // Если это текущий юзер - обновляем его сессию
+        if (user?.username === username) {
+          const updatedUser = { ...user, isPremium: tier !== 'free', subscriptionTier: tier };
+          setUser(updatedUser);
+          localStorage.setItem(SESSION_KEY, JSON.stringify({ ...updatedUser, expiresAt: Date.now() + 86400000 }));
+        }
+      }
+    } catch (e) {
+      console.error('Tier update error:', e);
     }
   };
 
@@ -244,7 +277,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ 
-      user, login, register, logout, activatePremium, removePremium,
+      user, login, register, logout, activatePremium, removePremium, setSubscriptionTier,
       paymentPending, clearPaymentPending, allUsers, allWorkouts,
       addWorkout, deleteWorkout, messages, sendMessage
     }}>

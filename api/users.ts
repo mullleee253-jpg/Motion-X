@@ -44,10 +44,15 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   }
 
   if (req.method === 'PUT') {
-    const { username, isPremium } = req.body;
+    const { username, isPremium, subscriptionTier } = req.body;
+    const updateData: any = {};
+    
+    if (isPremium !== undefined) updateData.isPremium = isPremium;
+    if (subscriptionTier !== undefined) updateData.subscriptionTier = subscriptionTier;
+    
     await collection.updateOne(
       { username: username.toLowerCase() },
-      { $set: { isPremium } }
+      { $set: updateData }
     );
     return res.status(200).json({ success: true });
   }

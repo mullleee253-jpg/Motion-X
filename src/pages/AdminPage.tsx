@@ -3,7 +3,7 @@ import { useAuth, ADMIN_KEY } from '../context/AuthContext';
 import { Workout, WorkoutStep } from '../types';
 
 export default function AdminPage() {
-  const { user, login, allUsers, allWorkouts, activatePremium, removePremium, addWorkout, deleteWorkout, logout, messages, sendMessage } = useAuth();
+  const { user, login, allUsers, allWorkouts, activatePremium, removePremium, setSubscriptionTier, addWorkout, deleteWorkout, logout, messages, sendMessage } = useAuth();
   
   const [adminLogin, setAdminLogin] = useState('');
   const [adminPass, setAdminPass] = useState('');
@@ -273,23 +273,33 @@ export default function AdminPage() {
                 </div>
                 
                 <div className="text-center">
-                  {u.isPremium ? (
-                    <span className="px-3 py-1 bg-orange-500/10 text-orange-500 text-[10px] font-black rounded-md border border-orange-500/20">PRO_ELITE</span>
+                  {u.subscriptionTier === 'pro' || (u.isPremium && !u.subscriptionTier) ? (
+                    <span className="px-3 py-1 bg-orange-500/10 text-orange-500 text-[10px] font-black rounded-md border border-orange-500/20">PRO 👑</span>
+                  ) : u.subscriptionTier === 'standard' ? (
+                    <span className="px-3 py-1 bg-blue-500/10 text-blue-500 text-[10px] font-black rounded-md border border-blue-500/20">STANDARD 💎</span>
                   ) : (
-                    <span className="px-3 py-1 bg-zinc-900 text-zinc-700 text-[10px] font-bold rounded-md">BASIC_FREE</span>
+                    <span className="px-3 py-1 bg-zinc-900 text-zinc-700 text-[10px] font-bold rounded-md">FREE</span>
                   )}
                 </div>
 
-                <div className="text-right">
+                <div className="text-right flex gap-2">
                   <button
-                    onClick={() => u.isPremium ? removePremium(u.username) : activatePremium(u.username)}
-                    className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                      u.isPremium 
-                        ? 'bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white' 
-                        : 'bg-white text-black hover:bg-orange-500 shadow-xl shadow-white/5'
-                    }`}
+                    onClick={() => setSubscriptionTier(u.username, 'standard')}
+                    className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white"
                   >
-                    {u.isPremium ? 'Revoke Access' : 'Grant PRO'}
+                    Standard
+                  </button>
+                  <button
+                    onClick={() => setSubscriptionTier(u.username, 'pro')}
+                    className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white"
+                  >
+                    Pro
+                  </button>
+                  <button
+                    onClick={() => setSubscriptionTier(u.username, 'free')}
+                    className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white"
+                  >
+                    Revoke
                   </button>
                 </div>
               </div>

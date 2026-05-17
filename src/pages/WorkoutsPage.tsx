@@ -7,18 +7,19 @@ const PAYMENT_URL = 'https://dalink.to/mull12312312312';
 
 export default function WorkoutsPage() {
   const { user, logout, activatePremium, paymentPending, clearPaymentPending, allWorkouts } = useAuth();
-  const [tab, setTab] = useState<'free' | 'pro'>('free');
+  const [tab, setTab] = useState<'free' | 'standard' | 'pro'>('free');
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
 
   // Определяем уровень доступа пользователя
   const userTier = user?.subscriptionTier || (user?.isPremium ? 'pro' : 'free');
   
-  // Фильтруем тренировки по табу и доступу
+  // Фильтруем тренировки по табу
   const list = allWorkouts.filter(w => {
-    // Показываем бесплатные в табе "free"
-    if (tab === 'free') return !w.premium && (!w.tier || w.tier === 'free');
-    // Показываем платные в табе "pro"
-    return w.premium || (w.tier && w.tier !== 'free');
+    const workoutTier = w.tier || (w.premium ? 'pro' : 'free');
+    if (tab === 'free') return workoutTier === 'free';
+    if (tab === 'standard') return workoutTier === 'standard';
+    if (tab === 'pro') return workoutTier === 'pro';
+    return false;
   });
 
   if (selectedWorkout) {
@@ -75,6 +76,12 @@ export default function WorkoutsPage() {
               className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all ${tab === 'free' ? 'bg-white text-black shadow-lg shadow-white/5' : 'text-zinc-500 hover:text-white'}`}
             >
               БЕСПЛАТНЫЕ
+            </button>
+            <button 
+              onClick={() => setTab('standard')}
+              className={`px-6 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${tab === 'standard' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'text-zinc-500 hover:text-white'}`}
+            >
+              STANDARD 💎
             </button>
             <button 
               onClick={() => setTab('pro')}
