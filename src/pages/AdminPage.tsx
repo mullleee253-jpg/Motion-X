@@ -89,6 +89,14 @@ export default function AdminPage() {
     };
     
     addWorkout(workout);
+    
+    // Attempt to sync with MongoDB via API
+    fetch('/api/workouts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(workout)
+    }).catch(err => console.log('Offline mode: Saved only locally'));
+
     setShowAddModal(false);
     setNw({ title: '', description: '', level: 'Средний', category: 'Сила', premium: false, emoji: '⚡', steps: [] });
   };
