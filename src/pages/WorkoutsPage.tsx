@@ -19,7 +19,7 @@ export default function WorkoutsPage() {
     forceUpdate(prev => prev + 1);
   }, [user?.subscriptionTier, user?.isPremium]);
   
-  // Фильтруем тренировки по табу (накопительно)
+  // Фильтруем тренировки по табу (показываем все, но блокируем недоступные)
   const list = allWorkouts.filter(w => {
     const workoutTier = w.tier || (w.premium ? 'pro' : 'free');
     
@@ -34,20 +34,6 @@ export default function WorkoutsPage() {
     }
     return false;
   });
-
-  // Debug
-  useEffect(() => {
-    console.log('=== WORKOUT DEBUG ===');
-    console.log('Total workouts:', allWorkouts.length);
-    console.log('First 5 workouts:', allWorkouts.slice(0, 5).map(w => ({ id: w.id, title: w.title, tier: w.tier, premium: w.premium })));
-    console.log('Workouts by tier:', {
-      free: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'free').length,
-      standard: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'standard').length,
-      pro: allWorkouts.filter(w => (w.tier || (w.premium ? 'pro' : 'free')) === 'pro').length,
-    });
-    console.log('Current tab:', tab, 'Showing:', list.length);
-    console.log('User tier:', userTier);
-  }, [allWorkouts, tab, list.length, userTier]);
 
   if (selectedWorkout) {
     return <WorkoutTimer workout={selectedWorkout} onClose={() => setSelectedWorkout(null)} />;
@@ -95,7 +81,6 @@ export default function WorkoutsPage() {
           <div>
             <h1 className="text-5xl font-black tracking-tighter mb-2">ТРЕНИРОВКИ</h1>
             <p className="text-zinc-500 font-medium">Выбери свою программу на сегодня</p>
-            <p className="text-zinc-700 text-xs mt-1">Всего: {allWorkouts.length} | Показано: {list.length}</p>
           </div>
           
           <div className="flex p-1.5 bg-zinc-900/50 rounded-2xl border border-white/5">
@@ -125,8 +110,9 @@ export default function WorkoutsPage() {
           {list.map((w, i) => {
             // Проверяем доступ по тарифу
             const workoutTier = w.tier || (w.premium ? 'pro' : 'free');
-            const locked = (workoutTier === 'standard' && userTier === 'free') || 
-                          (workoutTier === 'pro' && userTier !== 'pro');
+            const locked = 
+              (workoutTier === 'standard' && userTier === 'free') || 
+              (workoutTier === 'pro' && (userTier === 'free' || userTier === 'standard'));
             
             return (
               <div 
