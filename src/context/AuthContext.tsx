@@ -2,6 +2,14 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { User, Workout } from '../types';
 import { workouts as initialWorkouts } from '../data/workouts';
 
+interface Message {
+  id: string;
+  from: string;
+  to: string;
+  text: string;
+  timestamp: number;
+}
+
 interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => boolean;
@@ -15,6 +23,8 @@ interface AuthContextType {
   allWorkouts: Workout[];
   addWorkout: (w: Workout) => void;
   deleteWorkout: (id: number) => void;
+  messages: Message[];
+  sendMessage: (text: string, to?: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -22,11 +32,8 @@ const STORAGE_KEY = 'motonx_users_v2';
 const SESSION_KEY = 'motonx_session_v2';
 const PAYMENT_KEY = 'motonx_payment_pending_v2';
 const WORKOUTS_KEY = 'motonx_workouts_v2';
+const MESSAGES_KEY = 'motonx_messages_v2';
 
-// Future database integration
-export const IS_SERVER_MODE = false;
-
-// ADMIN SECURITY HASH (admin / master2026)
 const ADMIN_LOGIN = 'admin';
 const ADMIN_PASS = 'master_2026_secure';
 export const ADMIN_KEY = 'motonx-key-99';
@@ -45,12 +52,17 @@ function getWorkouts(): Workout[] {
   } catch { return initialWorkouts; }
 }
 
+function getMessages(): Message[] {
+  try { return JSON.parse(localStorage.getItem(MESSAGES_KEY) || '[]'); } catch { return []; }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     try { const s = localStorage.getItem(SESSION_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
   });
   const [allUsers, setAllUsers] = useState<User[]>(getUsers);
   const [allWorkouts, setAllWorkouts] = useState<Workout[]>(getWorkouts);
+  const [messages, setMessages] = useState<Message[]>(getMessages);
   const [paymentPending, setPaymentPending] = useState(() => localStorage.getItem(PAYMENT_KEY) === 'true');
 
   useEffect(() => {
@@ -63,14 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (username: string, password: string): boolean => {
-    // Check Admin
     if (username === ADMIN_LOGIN && password === ADMIN_PASS) {
       const adminUser: User = { username: 'Admin', password: '', isPremium: true, isAdmin: true };
       setUser(adminUser);
       localStorage.setItem(SESSION_KEY, JSON.stringify(adminUser));
       return true;
     }
-
     const users = getUsers();
     const found = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
     if (found) {
@@ -129,6 +139,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(WORKOUTS_KEY, JSON.stringify(updated));
   };
 
+  const sendMessage = (text: string, to?: string) => {
+    if (!user) return;
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      from: user.username,
+      to: to || 'Admin',
+      text,
+      timestamp: Date.now(),
+    };
+    const updated = [...messages, newMessage];
+    setMessages(updated);
+    localStorage.setItem(MESSAGES_KEY, JSON.stringify(updated));
+  };
+
   const clearPaymentPending = () => {
     localStorage.removeItem(PAYMENT_KEY);
     setPaymentPending(false);
@@ -138,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{ 
       user, login, register, logout, activatePremium, removePremium,
       paymentPending, clearPaymentPending, allUsers, allWorkouts,
-      addWorkout, deleteWorkout
+      addWorkout, deleteWorkout, messages, sendMessage
     }}>
       {children}
     </AuthContext.Provider>

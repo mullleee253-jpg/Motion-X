@@ -7,6 +7,8 @@ import AdminPage from './pages/AdminPage';
 
 type Screen = 'landing' | 'login' | 'register' | 'admin';
 
+import SupportChat from './components/SupportChat';
+
 function AppInner() {
   const { user } = useAuth();
   const [screen, setScreen] = useState<Screen>(() => {
@@ -30,7 +32,12 @@ function AppInner() {
   }
 
   if (user) {
-    return <WorkoutsPage />;
+    return (
+      <>
+        <WorkoutsPage />
+        <SupportChat />
+      </>
+    );
   }
 
   if (screen === 'login' || screen === 'register') {

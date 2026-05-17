@@ -1,16 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth, ADMIN_KEY } from '../context/AuthContext';
 import { Workout, WorkoutStep } from '../types';
 
 export default function AdminPage() {
-  const { user, login, allUsers, allWorkouts, activatePremium, removePremium, addWorkout, deleteWorkout, logout } = useAuth();
+  const { user, login, allUsers, allWorkouts, activatePremium, removePremium, addWorkout, deleteWorkout, logout, messages, sendMessage } = useAuth();
   
   const [adminLogin, setAdminLogin] = useState('');
   const [adminPass, setAdminPass] = useState('');
   const [keyInput, setKeyInput] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [activeTab, setActiveTab] = useState<'users' | 'workouts'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'workouts' | 'support'>('users');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedUserChat, setSelectedUserChat] = useState<string | null>(null);
+  const [adminReply, setAdminReply] = useState('');
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [messages, selectedUserChat]);
+
+  const chatUsers = Array.from(new Set(messages.map(m => m.from === 'Admin' ? m.to : m.from))).filter(u => u !== 'Admin');
+  const currentChatMessages = messages.filter(m => m.from === selectedUserChat || m.to === selectedUserChat);
 
   const [nw, setNw] = useState<Partial<Workout>>({
     title: '', description: '', level: 'Средний', category: 'Сила', premium: false, emoji: '⚡', steps: []
@@ -95,7 +107,7 @@ export default function AdminPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(workout)
-    }).catch(err => console.log('Offline mode: Saved only locally'));
+    }).catch(() => console.log('Offline mode: Saved only locally'));
 
     setShowAddModal(false);
     setNw({ title: '', description: '', level: 'Средний', category: 'Сила', premium: false, emoji: '⚡', steps: [] });
@@ -120,6 +132,7 @@ export default function AdminPage() {
           {[
             { id: 'users', l: 'Пользователи', e: '👥' },
             { id: 'workouts', l: 'Тренировки', e: '🏋️' },
+            { id: 'support', l: 'Поддержка', e: '💬' },
           ].map(t => (
             <button
               key={t.id}
@@ -240,6 +253,85 @@ export default function AdminPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'support' && (
+          <div className="grid lg:grid-cols-3 gap-8 h-[600px]">
+            {/* User List */}
+            <div className="bg-zinc-950 border border-white/5 rounded-3xl overflow-hidden flex flex-col">
+              <div className="p-6 border-b border-white/5 bg-black">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Активные диалоги</h3>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {chatUsers.length === 0 ? (
+                  <div className="p-8 text-center text-zinc-700 text-xs">Нет сообщений</div>
+                ) : (
+                  chatUsers.map(u => (
+                    <button
+                      key={u}
+                      onClick={() => setSelectedUserChat(u)}
+                      className={`w-full p-6 text-left border-b border-white/5 transition-all ${selectedUserChat === u ? 'bg-white/5' : 'hover:bg-white/[0.02]'}`}
+                    >
+                      <div className="font-bold text-white">{u}</div>
+                      <div className="text-[10px] text-zinc-600 mt-1 uppercase tracking-widest">User Cluster</div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Chat View */}
+            <div className="lg:col-span-2 bg-zinc-950 border border-white/5 rounded-3xl overflow-hidden flex flex-col">
+              {selectedUserChat ? (
+                <>
+                  <div className="p-6 border-b border-white/5 bg-black flex justify-between items-center">
+                    <h3 className="text-sm font-black text-white uppercase tracking-tighter italic">Диалог: {selectedUserChat}</h3>
+                  </div>
+                  <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-8 space-y-4 custom-scroll">
+                    {currentChatMessages.map(m => (
+                      <div key={m.id} className={`flex ${m.from === 'Admin' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[70%] p-4 rounded-2xl text-xs leading-relaxed ${
+                          m.from === 'Admin' 
+                            ? 'bg-orange-500 text-white rounded-tr-none' 
+                            : 'bg-zinc-900 text-zinc-300 rounded-tl-none border border-white/5'
+                        }`}>
+                          <div className="font-black mb-1 opacity-50 uppercase text-[8px] tracking-widest">{m.from}</div>
+                          {m.text}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <form 
+                    onSubmit={(e) => { 
+                      e.preventDefault(); 
+                      if(adminReply.trim()) { 
+                        sendMessage(adminReply.trim(), selectedUserChat); 
+                        setAdminReply(''); 
+                      } 
+                    }}
+                    className="p-6 border-t border-white/5 bg-black"
+                  >
+                    <div className="flex gap-4">
+                      <input 
+                        value={adminReply}
+                        onChange={e => setAdminReply(e.target.value)}
+                        placeholder="Введите ответ..."
+                        className="flex-1 bg-zinc-900 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white focus:border-orange-500 outline-none transition-all"
+                      />
+                      <button className="px-8 bg-white text-black font-black rounded-2xl text-xs uppercase tracking-widest hover:bg-zinc-200 transition-all">
+                        SEND
+                      </button>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-zinc-700">
+                  <div className="text-4xl mb-4">💬</div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em]">Выберите диалог для начала</div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </main>
