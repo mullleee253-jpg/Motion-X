@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Workout } from '../types';
 import WorkoutTimer from '../components/WorkoutTimer';
@@ -9,16 +9,29 @@ export default function WorkoutsPage() {
   const { user, logout, activatePremium, paymentPending, clearPaymentPending, allWorkouts } = useAuth();
   const [tab, setTab] = useState<'free' | 'standard' | 'pro'>('free');
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
+  const [, forceUpdate] = useState(0);
 
   // Определяем уровень доступа пользователя
   const userTier = user?.subscriptionTier || (user?.isPremium ? 'pro' : 'free');
   
-  // Фильтруем тренировки по табу
+  // Форсируем обновление при изменении тарифа
+  useEffect(() => {
+    forceUpdate(prev => prev + 1);
+  }, [user?.subscriptionTier, user?.isPremium]);
+  
+  // Фильтруем тренировки по табу (накопительно)
   const list = allWorkouts.filter(w => {
     const workoutTier = w.tier || (w.premium ? 'pro' : 'free');
-    if (tab === 'free') return workoutTier === 'free';
-    if (tab === 'standard') return workoutTier === 'standard';
-    if (tab === 'pro') return workoutTier === 'pro';
+    
+    if (tab === 'free') {
+      return workoutTier === 'free';
+    }
+    if (tab === 'standard') {
+      return workoutTier === 'free' || workoutTier === 'standard';
+    }
+    if (tab === 'pro') {
+      return true; // Показываем все
+    }
     return false;
   });
 
@@ -144,7 +157,9 @@ export default function WorkoutsPage() {
                   {locked && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-[32px]">
                       <div className="text-4xl mb-4">🔒</div>
-                      <span className="text-xs font-black uppercase tracking-widest bg-orange-500 text-white px-4 py-2 rounded-xl">Unlock with PRO</span>
+                      <span className="text-xs font-black uppercase tracking-widest bg-orange-500 text-white px-4 py-2 rounded-xl">
+                        {workoutTier === 'standard' ? 'Unlock with STANDARD' : 'Unlock with PRO'}
+                      </span>
                     </div>
                   )}
                 </div>

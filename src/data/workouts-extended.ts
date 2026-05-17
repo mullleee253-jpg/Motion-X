@@ -50,9 +50,9 @@ export const workouts: Workout[] = [
   // FREE: 20 тренировок (ID 1-20)
   ...Array.from({ length: 20 }, (_, i) => generateWorkout(i + 1, 'free')),
   
-  // STANDARD: 10 тренировок (ID 21-30)
+  // STANDARD: 10 дополнительных тренировок (ID 21-30)
   ...Array.from({ length: 10 }, (_, i) => generateWorkout(i + 21, 'standard')),
   
-  // PRO: 20 тренировок (ID 31-50)
+  // PRO: 20 дополнительных тренировок (ID 31-50)
   ...Array.from({ length: 20 }, (_, i) => generateWorkout(i + 31, 'pro')),
 ];

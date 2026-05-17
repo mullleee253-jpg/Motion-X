@@ -261,7 +261,7 @@ export default function AdminPage() {
               <span className="text-right">Operation</span>
             </div>
             {allUsers.map(u => (
-              <div key={u.username} className="bg-zinc-950 border border-white/5 rounded-3xl p-6 flex items-center justify-between hover:border-white/10 transition-all group">
+              <div key={`${u.username}-${u.subscriptionTier || 'free'}-${u.isPremium}`} className="bg-zinc-950 border border-white/5 rounded-3xl p-6 flex items-center justify-between hover:border-white/10 transition-all group">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-zinc-900 rounded-xl flex items-center justify-center font-black text-zinc-500 group-hover:text-white transition-colors">
                     {u.username[0].toUpperCase()}
